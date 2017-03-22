@@ -46,11 +46,24 @@ class Gui():
         self.plosca = tkinter.Canvas(master, width=4*Gui.VELIKOST_POLJA, height=4*Gui.VELIKOST_POLJA)
         self.plosca.grid(row=1, column=0)
 
+        # Gumbi za izbiro figure
+
+        self.gumbi = tkinter.Canvas(master, width=4*Gui.VELIKOST_POLJA, height=4*Gui.VELIKOST_POLJA)
+        self.gumbi.grid(row=2, column=0)
+
+        #platno za prikaz izbranege figure
+        self.figura = tkinter.Canvas(master, width = Gui.VELIKOST_POLJA, height=4* Gui.VELIKOST_POLJA)
+        self.figura.grid(row=1,column = 1)
+
+
         # Črte na igralnem polju
         self.narisi_crte()
 
         # Naročimo se na dogodek Button-1 na self.plosca,
         self.plosca.bind("<Button-1>", self.plosca_klik)
+
+        # Naročimo se na dogodek Button-1 na self.gumbi,
+        self.gumbi.bind("<Button-1>", self.gumbi_klik)
 
         # Prični igro v načinu človek proti človeku
         self.zacni_igro()
@@ -108,6 +121,68 @@ class Gui():
         self.plosca.create_line(0*d, 1*d, 4*d, 1*d, tag=Gui.TAG_OKVIR)
         self.plosca.create_line(0*d, 2*d, 4*d, 2*d, tag=Gui.TAG_OKVIR)
         self.plosca.create_line(0*d, 3*d, 4*d, 3*d, tag=Gui.TAG_OKVIR)
+        self.plosca.create_line(0*d, 4*d, 4*d, 4*d, tag=Gui.TAG_OKVIR)
+        self.gumbi.create_line(1 * d, 0 * d, 1 * d, 4 * d, tag=Gui.TAG_OKVIR)
+        self.gumbi.create_line(2 * d, 0 * d, 2 * d, 4 * d, tag=Gui.TAG_OKVIR)
+        self.gumbi.create_line(3 * d, 0 * d, 3 * d, 4 * d, tag=Gui.TAG_OKVIR)
+        self.gumbi.create_line(0 * d, 1 * d, 4 * d, 1 * d, tag=Gui.TAG_OKVIR)
+        self.gumbi.create_line(0 * d, 2 * d, 4 * d, 2 * d, tag=Gui.TAG_OKVIR)
+        self.gumbi.create_line(0 * d, 3 * d, 4 * d, 3 * d, tag=Gui.TAG_OKVIR)
+
+        self.narisi_gumbe([0,0], luknja = True, barva = 'green', diagonala = True, kvadrat = True)
+        self.narisi_gumbe([1, 0], luknja=True, barva='green', diagonala=False, kvadrat=True)
+        self.narisi_gumbe([2, 0], luknja=False, barva='green', diagonala=True, kvadrat=True)
+        self.narisi_gumbe([3, 0], luknja=False, barva='green', diagonala=False, kvadrat=True)
+
+        self.narisi_gumbe([0, 1], luknja=True, barva='yellow', diagonala=True, kvadrat=True)
+        self.narisi_gumbe([1, 1], luknja=True, barva='yellow', diagonala=False, kvadrat=True)
+        self.narisi_gumbe([2, 1], luknja=False, barva='yellow', diagonala=True, kvadrat=True)
+        self.narisi_gumbe([3, 1], luknja=False, barva='yellow', diagonala=False, kvadrat=True)
+
+        self.narisi_gumbe([0, 2], luknja=True, barva='green', diagonala=True)
+        self.narisi_gumbe([1, 2], luknja=True, barva='green', diagonala=False)
+        self.narisi_gumbe([2, 2], luknja=False, barva='green', diagonala=True)
+        self.narisi_gumbe([3, 2], luknja=False, barva='green', diagonala=False)
+
+        self.narisi_gumbe([0, 3], luknja=True, barva='yellow', diagonala=True)
+        self.narisi_gumbe([1, 3], luknja=True, barva='yellow', diagonala=False)
+        self.narisi_gumbe([2, 3], luknja=False, barva='yellow', diagonala=True)
+        self.narisi_gumbe([3, 3], luknja=False, barva='yellow', diagonala=False)
+
+
+
+
+    def narisi_gumbe(self, p, lastnosti):
+        x = p[0] * 100
+        y = p[1] * 100
+        sirina = 3
+        if lastnosti[1] == 0:
+            barva = 'yellow'
+        else:
+            barva = 'green'
+        if lastnosti[2] == 0:
+            luknja = True
+        else:
+            luknja = False
+        if lastnosti[2] == 0:
+            diagonala = True
+        else:
+            diagonala = False
+        if lastnosti[0] == 0:
+            self.gumbi.create_rectangle(x + 5, y + 5, x + 95, y + 95, width=sirina, fill=barva, tag=Gui.TAG_FIGURA)
+            if luknja:
+                self.gumbi.create_oval(x + 35, y + 35, x + 65, y + 65, width=sirina, tag=Gui.TAG_FIGURA)
+            if diagonala:
+                self.gumbi.create_line(x + 5, y + 5, x + 95, y + 95, width=sirina, tag=Gui.TAG_FIGURA)
+        elif lastnosti[0] == 1:
+            self.gumbi.create_oval(x + 5, y + 5, x + 95, y + 95, width=sirina, fill=barva, tag=Gui.TAG_FIGURA)
+            if luknja:
+                self.gumbi.create_oval(x + 35, y + 35, x + 65, y + 65, width=sirina, tag=Gui.TAG_FIGURA)
+            if diagonala:
+                self.gumbi.create_line(x + 18, y + 18, x + 82, y + 82, width=sirina, tag=Gui.TAG_FIGURA)
+        else:
+            pass
+
 
     def narisi_X(self, p, zmagovalni=False, luknja = True, barva = 'green', diagonala = True): #kvadrat
         """Nariši križec v polje (i, j)."""
@@ -138,6 +213,24 @@ class Gui():
                 self.narisi_X(p, zmagovalni=True)
             elif zmagovalec == IGRALEC_2:
                 self.narisi_O(p, zmagovalni=True)
+
+    def gumbi_klik(self, event):
+        """Obdelaj klik na ploščo."""
+        # Tistemu, ki je na potezi, povemo, da je uporabnik kliknil na ploščo.
+        # Podamo mu potezo p.
+        i = event.x // 100
+        j = event.y // 100
+        if 0 <= i <= 3 and 0 <= j <= 3:
+            if self.igra.na_potezi == IGRALEC_1:
+                self.igralec_x.klik((i, j))
+            elif self.igra.na_potezi == IGRALEC_2:
+                self.igralec_o.klik((i, j))
+            else:
+                # Nihče ni na potezi, ne naredimo nič
+                pass
+        else:
+            logging.debug("klik izven plošče {0}, polje {1}".format((event.x, event.y), (i, j)))
+
 
     def plosca_klik(self, event):
         """Obdelaj klik na ploščo."""
@@ -186,6 +279,10 @@ class Gui():
             else:
                 # Igre je konec, koncaj
                 self.koncaj_igro(zmagovalec, trojka)
+    def izberi_figuro(self,p):
+        #TODO
+        pass
+
 
 ######################################################################
 ## Glavni program

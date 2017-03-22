@@ -20,3 +20,6 @@ class Clovek():
     def klik(self, p):
         # Povlečemo potezo. Če ni veljavna, se ne bo zgodilo nič.
         self.gui.povleci_potezo(p)
+
+    def gumb_klik(self,p):
+        self.gui.izberi_figuro(p)
