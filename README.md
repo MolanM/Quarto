@@ -24,12 +24,12 @@ Igralca se izmenjujeta na potezah - izbirata figuro, ki jo mora naslednji postav
 * Git repozitorij z README in LICENSE
 * Izdelava načrta dela
 * Izdelava GUI
-..* 4x4 polje
-..* 16 figur za izbiranje
-..* prikaz izbrane figure
-..* brisanje izbrane figure
-..* risanje izbrane figure
-..* navodila za uporabnika
+  * 4x4 polje
+  * 16 figur za izbiranje
+  * prikaz izbrane figure
+  * brisanje izbrane figure
+  * risanje izbrane figure
+  * navodila za uporabnika
 * Logika igre
 * Igra med dvema človekoma
 * Računalnik kot igralec
