@@ -11,6 +11,7 @@ Igra je ločena v štiri datoteke:
 
 ## Pravila igre:
 [Hiter opis igre v angleščini](https://en.wikipedia.org/wiki/Quarto_(board_game))
+
 Quarto je namizna igra za dva igralca. Igra se na plošči z 4x4 polji. Obstaja 16 različnih figur - vsaka ima 4 lastnosti:
 * Kvadrat ali krog
 * Rumena ali zelena
