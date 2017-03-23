@@ -16,6 +16,7 @@ Quarto je namizna igra za dva igralca. Igra se na plošči z 4x4 polji. Obstaja 
 * Rumena ali zelena
 * Ima ali nima luknje (krogec v sredini)
 * Ima ali nima diagonale
+
 Igralca se izmenjujeta na potezah - izbirata figuro, ki jo mora naslednji postaviti na ploščo. Igralec zmaga, ko na ploščo postavi figuro, ki dopolonjuje navpično, diagonalno ali horizontalno četverico, katere figure imajo skupno lastost (isto obliko, isto barvo, ...).
 
 
