@@ -34,6 +34,7 @@ class Igra():
                       [PRAZNO, PRAZNO, PRAZNO, PRAZNO]]
         self.na_potezi = IGRALEC_1
         self.zgodovina = []
+        self.izbrana_figura = None
 
     def shrani_pozicijo(self):
         """Shrani trenutno pozicijo, da se bomo lahko kasneje vrnili vanjo
@@ -66,20 +67,23 @@ class Igra():
                     poteze.append((i,j))
         return poteze
 
+    def izbrali_figuro(self):
+        self.na_potezi = nasprotnik(self.na_potezi)
+
     def povleci_potezo(self, p):
         """Povleci potezo p, ne naredi nič, če je neveljavna.
            Vrne stanje_igre() po potezi ali None, ce je poteza neveljavna."""
         (i,j) = p
-        if (self.plosca[i][j] != PRAZNO) or (self.na_potezi == None):
+        if (self.plosca[i][j] != PRAZNO) or (self.na_potezi == None) or (self.izbrana_figura == None):
             # neveljavna poteza
             return None
         else:
             self.shrani_pozicijo()
-            self.plosca[i][j] = self.na_potezi
+            self.plosca[i][j] = self.izbrana_figura
             (zmagovalec, trojka) = self.stanje_igre()
             if zmagovalec == NI_KONEC:
                 # Igre ni konec, zdaj je na potezi nasprotnik
-                self.na_potezi = nasprotnik(self.na_potezi)
+                pass
             else:
                 # Igre je konec
                 self.na_potezi = None
@@ -110,11 +114,13 @@ class Igra():
            - (NI_KONEC, None), če igre še ni konec
         """
         for t in Igra.cetvorke:
-            ((i1,j1),(i2,j2),(i3,j3), (i4,j4)) = t
-            p = self.plosca[i1][j1]
-            if p != PRAZNO and p == self.plosca[i2][j2] == self.plosca[i3][j3] == self.plosca[i4][j4]:
-                # Našli smo zmagovalno cetvorko
-                return (p, [t[0], t[1], t[2], t[3]])
+            for l in range(4):
+                ((i1,j1),(i2,j2),(i3,j3), (i4,j4)) = t
+                p = self.plosca[i1][j1]
+                if p != PRAZNO and self.plosca[i2][j2] != PRAZNO and self.plosca[i3][j3] != PRAZNO and self.plosca[i4][j4] != PRAZNO and \
+                p[l] == self.plosca[i2][j2][l] == self.plosca[i3][j3][l] == self.plosca[i4][j4][l]:
+                    # Našli smo zmagovalno cetvorko
+                    return (self.na_potezi, [t[0], t[1], t[2], t[3]])
         # Ni zmagovalca, ali je igre konec?
         for i in range(4):
             for j in range(4):
