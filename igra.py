@@ -1,6 +1,8 @@
 ######################################################################
 ## Igra
 
+from pomozne import *
+
 IGRALEC_1 = "prvi"
 IGRALEC_2 = "drugi"
 PRAZNO = "."
@@ -35,6 +37,14 @@ class Igra():
         self.na_potezi = IGRALEC_1
         self.zgodovina = []
         self.izbrana_figura = None
+        self.mozne_figure = []
+        self.generiraj_figure()
+
+    def generiraj_figure(self):
+        for i in range(4):
+            for j in range(4):
+                lastnosti = binarno(i * 4 + j)
+                self.mozne_figure.append(lastnosti)
 
     def shrani_pozicijo(self):
         """Shrani trenutno pozicijo, da se bomo lahko kasneje vrnili vanjo
@@ -67,8 +77,17 @@ class Igra():
                     poteze.append((i,j))
         return poteze
 
-    def izbrali_figuro(self):
+    def izbrali_figuro(self, lastnosti):
+        self.mozne_figure.remove(lastnosti)
         self.na_potezi = nasprotnik(self.na_potezi)
+
+    def izberi_figuro(self, lastnosti):
+        figura = self.izbrana_figura
+        if figura is None and lastnosti in self.mozne_figure:
+            self.izbrana_figura = lastnosti
+            return True #?
+        else:
+            pass
 
     def povleci_potezo(self, p):
         """Povleci potezo p, ne naredi nič, če je neveljavna.
@@ -104,6 +123,7 @@ class Igra():
         # Diagonali
         [(0,0), (1,1), (2,2), (3,3)],
         [(0,3), (1,2), (2,1), (3,0)]
+        #kvadrati totdo kakšni kvadrati?
     ]
 
     def stanje_igre(self):

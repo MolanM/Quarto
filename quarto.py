@@ -300,20 +300,20 @@ class Gui():
         (x, y) = p
         lastnosti_figure = binarno(4*x +y)
         tag_lastnosti_figure = lastnosti_figure + 'tag'
-        if figura is None and self.gumbi.find_withtag(tag_lastnosti_figure): #treba spravit v igro
+        if self.igra.izberi_figuro(lastnosti_figure) is None:
+            pass
+        else:
             self.figura.delete(Gui.TAG_FIGURA)
             self.gumbi.delete(tag_lastnosti_figure)
-            self.igra.izbrana_figura = lastnosti_figure
             self.narisi_gumbe_izbrana_figura(lastnosti_figure)
-            self.igra.izbrali_figuro()
+            self.igra.izbrali_figuro(lastnosti_figure)
+
             if self.igra.na_potezi == IGRALEC_1:
                     self.napis.set("Na potezi je 1.")
                     self.igralec_x.igraj()
             elif self.igra.na_potezi == IGRALEC_2:
                     self.napis.set("Na potezi je 2.")
                     self.igralec_o.igraj()
-        else:
-            pass
 
     def narisi_gumbe_izbrana_figura(self, lastnosti):
         (barva, luknja, diagonala, kvadrat) = self.razberi_lastnosti(lastnosti)
