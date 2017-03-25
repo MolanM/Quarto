@@ -77,14 +77,12 @@ class Igra():
                     poteze.append((i,j))
         return poteze
 
-    def izbrali_figuro(self, lastnosti):
-        self.mozne_figure.remove(lastnosti)
-        self.na_potezi = nasprotnik(self.na_potezi)
-
     def izberi_figuro(self, lastnosti):
         figura = self.izbrana_figura
         if figura is None and lastnosti in self.mozne_figure:
             self.izbrana_figura = lastnosti
+            self.mozne_figure.remove(lastnosti)
+            self.na_potezi = nasprotnik(self.na_potezi)
             return True #?
         else:
             pass

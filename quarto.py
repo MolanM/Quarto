@@ -306,7 +306,6 @@ class Gui():
             self.figura.delete(Gui.TAG_FIGURA)
             self.gumbi.delete(tag_lastnosti_figure)
             self.narisi_gumbe_izbrana_figura(lastnosti_figure)
-            self.igra.izbrali_figuro(lastnosti_figure)
 
             if self.igra.na_potezi == IGRALEC_1:
                     self.napis.set("Na potezi je 1.")
