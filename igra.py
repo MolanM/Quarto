@@ -3,8 +3,8 @@
 
 from pomozne import *
 
-IGRALEC_1 = "prvi"
-IGRALEC_2 = "drugi"
+IGRALEC_1 = "IGRALEC_1"
+IGRALEC_2 = "IGRALEC_2"
 PRAZNO = "."
 NEODLOCENO = "neodločeno"
 NI_KONEC = "ni konec"
@@ -50,7 +50,7 @@ class Igra():
         """Shrani trenutno pozicijo, da se bomo lahko kasneje vrnili vanjo
            z metodo razveljavi."""
         p = [self.plosca[i][:] for i in range(4)]
-        self.zgodovina.append((p, self.na_potezi))
+        self.zgodovina.append((p, self.na_potezi, self.izbrana_figura))
 
     def kopija(self):
         """Vrni kopijo te igre, brez zgodovine."""
@@ -62,11 +62,13 @@ class Igra():
         k = Igra()
         k.plosca = [self.plosca[i][:] for i in range(4)]
         k.na_potezi = self.na_potezi
+        k.izbrana_figura = self.izbrana_figura
+        k.mozne_figure = self.mozne_figure
         return k
 
     def razveljavi(self):
         """Razveljavi potezo in se vrni v prejšnje stanje."""
-        (self.plosca, self.na_potezi) = self.zgodovina.pop()
+        (self.plosca, self.na_potezi, self.izbrana_figura) = self.zgodovina.pop()
 
     def veljavne_poteze(self):
         """Vrni seznam veljavnih potez."""

@@ -2,12 +2,13 @@ import tkinter    # za uporabniški vmesnik
 import argparse   # za argumente iz ukazne vrstice
 import logging    # za odpravljanje napak
 
-#komentar
+MINIMAX_GLOBINA = 1
 
 from igra import *
 from clovek import *
 from pomozne import *
-
+from minimax import *
+from racunalnik import *
 ######################################################################
 ## Uporabniški vmesnik
 
@@ -22,7 +23,7 @@ class Gui():
     # Velikost polja
     VELIKOST_POLJA = 100
 
-    def __init__(self, master):
+    def __init__(self, master, globina):
         self.igralec_x = None # Objekt, ki igra X (nastavimo ob začetku igre)
         self.igralec_o = None # Objekt, ki igra O (nastavimo ob začetku igre)
         self.igra = None # Objekt, ki predstavlja igro (nastavimo ob začetku igre)
@@ -34,11 +35,24 @@ class Gui():
         menu = tkinter.Menu(master)
         master.config(menu=menu) # Dodamo glavni menu v okno
 
-        # Podmenu za izbiro igre
+        # Nova Igra
         menu_igra = tkinter.Menu(menu)
         menu.add_cascade(label="Igra", menu=menu_igra)
-        menu_igra.add_command(label="Nova igra",
-                              command=lambda: self.zacni_igro())
+        #menu_igra.add_command(label="Nova igra",
+                              #command=lambda: self.zacni_igro())
+        menu_igra.add_command(label="X=Človek, O=Človek",
+                              command=lambda: self.zacni_igro(Clovek(self),
+                                                              Clovek(self)))
+        menu_igra.add_command(label="X=Človek, O=Računalnik",
+                              command=lambda: self.zacni_igro(Clovek(self),
+                                                              Racunalnik(self, Minimax(globina))))
+        menu_igra.add_command(label="X=Računalnik, O=Človek",
+                              command=lambda: self.zacni_igro(Racunalnik(self, Minimax(globina)),
+                                                              Clovek(self)))
+        menu_igra.add_command(label="X=Računalnik, O=Računalnik",
+                              command=lambda: self.zacni_igro(Racunalnik(self, Minimax(globina)),
+                                                              Racunalnik(self, Minimax(globina))))
+
         # Napis, ki prikazuje stanje igre
         self.napis = tkinter.StringVar(master, value="Dobrodošli v Quarto!")
         tkinter.Label(master, textvariable=self.napis).grid(row=0, column=0)
@@ -67,18 +81,18 @@ class Gui():
         # Naročimo se na dogodek Button-1 na self.gumbi,
         self.gumbi.bind("<Button-1>", self.gumbi_klik)
 
-        # Prični igro v načinu človek proti človeku
-        self.zacni_igro()
+        # Prični igro v načinu človek proti računalniku
+        self.zacni_igro(Clovek(self), Racunalnik(self, Minimax(globina)))
 
 
-    def zacni_igro(self):
+    def zacni_igro(self, igralec_x, igralec_o):
         """Nastavi stanje igre na zacetek igre.
            Za igralca uporabi dana igralca."""
         # Ustavimo vse igralce (ki morda razmišljajo)
         self.prekini_igralce()
         # Nastavimo igralce
-        self.igralec_x = Clovek(self)
-        self.igralec_o = Clovek(self)
+        self.igralec_x = igralec_x
+        self.igralec_o = igralec_o
         # Pobrišemo vse figure s polja
         self.plosca.delete(Gui.TAG_FIGURA)
         self.figura.delete(Gui.TAG_FIGURA)
@@ -182,7 +196,9 @@ class Gui():
             if diagonala:
                 self.gumbi.create_line(x + 18, y + 18, x + 82, y + 82, width=sirina, tag=lastnosti)
 
-    def narisi_X(self, p, zmagovalni=False): #kvadrat
+
+
+    def narisi(self, p, zmagovalni=False): #kvadrat
         """Nariši križec v polje (i, j)."""
         (barva, luknja, diagonala, kvadrat) = self.razberi_lastnosti(self.igra.izbrana_figura)
         x = p[0] * 100
@@ -201,25 +217,6 @@ class Gui():
             if diagonala:
                 self.plosca.create_line(x + 18, y + 18, x + 82, y + 82, width=sirina, tag=Gui.TAG_FIGURA)
 
-    def narisi_O(self, p, zmagovalni=False): #krog
-        # barva = '' je prazno
-        """Nariši krožec v polje (i, j)."""
-        (barva, luknja, diagonala, kvadrat) = self.razberi_lastnosti(self.igra.izbrana_figura)
-        x = p[0] * 100
-        y = p[1] * 100
-        sirina = (6 if zmagovalni else 3)
-        if kvadrat:
-            self.plosca.create_rectangle(x + 5, y + 5, x + 95, y + 95, width=sirina, fill=barva, tag=Gui.TAG_FIGURA)
-            if luknja:
-                self.plosca.create_oval(x + 35, y + 35, x + 65, y + 65, width=sirina, tag=Gui.TAG_FIGURA)
-            if diagonala:
-                self.plosca.create_line(x + 5, y + 5, x + 95, y + 95, width=sirina, tag=Gui.TAG_FIGURA)
-        else:
-            self.plosca.create_oval(x + 5, y + 5, x + 95, y + 95, width=sirina, fill=barva, tag=Gui.TAG_FIGURA)
-            if luknja:
-                self.plosca.create_oval(x + 35, y + 35, x + 65, y + 65, width=sirina, tag=Gui.TAG_FIGURA)
-            if diagonala:
-                self.plosca.create_line(x + 18, y + 18, x + 82, y + 82, width=sirina, tag=Gui.TAG_FIGURA)
 
     def narisi_zmagovalno_trojico(self, zmagovalec, trojka):
         #TODO
@@ -279,11 +276,11 @@ class Gui():
         else:
             # Poteza je bila veljavna, narišemo jo na zaslon
             if igralec == IGRALEC_1:
-                self.narisi_X(p)
+                self.narisi(p)
                 self.igra.izbrana_figura = None
                 self.figura.delete(Gui.TAG_FIGURA)
             elif igralec == IGRALEC_2:
-                self.narisi_O(p)
+                self.narisi(p)
                 self.igra.izbrana_figura = None
                 self.figura.delete(Gui.TAG_FIGURA)
             # Ugotovimo, kako nadaljevati
@@ -295,10 +292,13 @@ class Gui():
                 # Igre je konec, koncaj
                 self.koncaj_igro(zmagovalec, trojka)
 
-    def izberi_figuro(self,p):
-        figura = self.igra.izbrana_figura
-        (x, y) = p
-        lastnosti_figure = binarno(4*x +y)
+    def izberi_figuro(self,p, lastnost = None):
+        if lastnost == None:
+            figura = self.igra.izbrana_figura
+            (x, y) = p
+            lastnosti_figure = binarno(4*x +y)
+        else:
+            lastnosti_figure = lastnost
         tag_lastnosti_figure = lastnosti_figure + 'tag'
         if self.igra.izberi_figuro(lastnosti_figure) is None:
             pass
@@ -349,6 +349,11 @@ if __name__ == "__main__":
     # Opišemo argumente, ki jih sprejmemo iz ukazne vrstice
     parser = argparse.ArgumentParser(description="Igrica tri v vrsto")
     # Argument --debug, ki vklopi sporočila o tem, kaj se dogaja
+    parser.add_argument('--globina',
+                        default=MINIMAX_GLOBINA,
+                        type=int,
+                        help='globina iskanja za minimax algoritem')
+
     parser.add_argument('--debug',
                         action='store_true',
                         help='vklopi sporočila o dogajanju')
@@ -367,7 +372,7 @@ if __name__ == "__main__":
     # Naredimo objekt razreda Gui in ga spravimo v spremenljivko,
     # sicer bo Python mislil, da je objekt neuporabljen in ga bo pobrisal
     # iz pomnilnika.
-    aplikacija = Gui(root)
+    aplikacija = Gui(root, args.globina)
 
     # Kontrolo prepustimo glavnemu oknu. Funkcija mainloop neha
     # delovati, ko okno zapremo.
