@@ -68,7 +68,7 @@ class Minimax:
                 if self.igra.plosca[i][j] is not PRAZNO:
                     for k in range(4):
                         if self.igra.plosca[i][j][k] == self.igra.izbrana_figura[k]:
-                            y += 1
+                            x += 1
                 #if self.igra.plosca[i][j] == self.jaz:
                 #    x += 1
                 #elif self.igra.plosca[i][j] == nasprotnik(self.jaz):
@@ -103,7 +103,6 @@ class Minimax:
                     vrednost_najboljse = -Minimax.NESKONCNO
                     for p in self.igra.veljavne_poteze():
                         for f in self.igra.mozne_figure:
-                            print(str(p) + '...' + f)
                             self.igra.povleci_potezo(p)
                             self.igra.izberi_figuro(f)
                             vrednost = self.minimax(globina-1, not maksimiziramo)[1]
