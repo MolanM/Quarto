@@ -2,7 +2,7 @@
 
 Za projektno nalogo pri Programiranju 2 bova izdelala igro Quarto v programskem jeziku Python 3.
 
-Igra je ločena v pet datotek:
+Igra je ločena v šest datotek:
 * quarto.py
 * igra.py
 * clovek.py
