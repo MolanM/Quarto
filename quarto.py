@@ -2,7 +2,7 @@ import tkinter    # za uporabniški vmesnik
 import argparse   # za argumente iz ukazne vrstice
 import logging    # za odpravljanje napak
 
-MINIMAX_GLOBINA = 1
+MINIMAX_GLOBINA = 2
 
 from igra import *
 from clovek import *
@@ -101,20 +101,25 @@ class Gui():
         # Ustvarimo novo igro
         self.igra = Igra()
         self.igra.izbrana_figura = None
+        self.igra.zmagovalec = NI_KONEC
         # Križec je prvi na potezi
         self.napis.set("Na potezi je 1.")
         self.igralec_x.igraj()
 
     def koncaj_igro(self, zmagovalec, trojka):
         """Nastavi stanje igre na konec igre."""
-        if zmagovalec == IGRALEC_1:
-            self.napis.set("Zmagal je 1.")
-            self.narisi_zmagovalno_trojico(zmagovalec, trojka)
-        elif zmagovalec == IGRALEC_2:
-            self.napis.set("Zmagal je 2.")
-            self.narisi_zmagovalno_trojico(zmagovalec, trojka)
+        if zmagovalec != NEODLOCENO:
+            self.napis.set("Zmagal je " + str(self.igra.zmagovalec))
         else:
             self.napis.set("Neodločeno.")
+        #if zmagovalec == IGRALEC_1:
+        #    self.napis.set("Zmagal je 1.")
+        #    self.narisi_zmagovalno_trojico(zmagovalec, trojka)
+        #elif zmagovalec == IGRALEC_2:
+        #    self.napis.set("Zmagal je 2.")
+        #    self.narisi_zmagovalno_trojico(zmagovalec, trojka)
+        #else:
+        #    self.napis.set("Neodločeno.")
 
     def prekini_igralce(self):
         """Sporoči igralcem, da morajo nehati razmišljati."""
@@ -198,9 +203,9 @@ class Gui():
 
 
 
-    def narisi(self, p, zmagovalni=False): #kvadrat
+    def narisi(self, p, figura, zmagovalni=False): #kvadrat
         """Nariši križec v polje (i, j)."""
-        (barva, luknja, diagonala, kvadrat) = self.razberi_lastnosti(self.igra.izbrana_figura)
+        (barva, luknja, diagonala, kvadrat) = self.razberi_lastnosti(figura)
         x = p[0] * 100
         y = p[1] * 100
         sirina = (6 if zmagovalni else 3)
@@ -275,16 +280,10 @@ class Gui():
             pass
         else:
             # Poteza je bila veljavna, narišemo jo na zaslon
-            if igralec == IGRALEC_1:
-                self.narisi(p)
-                self.igra.izbrana_figura = None
-                self.figura.delete(Gui.TAG_FIGURA)
-            elif igralec == IGRALEC_2:
-                self.narisi(p)
-                self.igra.izbrana_figura = None
-                self.figura.delete(Gui.TAG_FIGURA)
             # Ugotovimo, kako nadaljevati
-            (zmagovalec, trojka) = r
+            (zmagovalec, trojka, figura) = r
+            self.narisi(p, figura)
+            self.figura.delete(Gui.TAG_FIGURA)
             if zmagovalec == NI_KONEC:
                 # Igra se nadaljuje
                 pass
@@ -292,13 +291,8 @@ class Gui():
                 # Igre je konec, koncaj
                 self.koncaj_igro(zmagovalec, trojka)
 
-    def izberi_figuro(self,p, lastnost = None):
-        if lastnost == None:
-            figura = self.igra.izbrana_figura
-            (x, y) = p
-            lastnosti_figure = binarno(4*x +y)
-        else:
-            lastnosti_figure = lastnost
+    def izberi_figuro(self, lastnost):
+        lastnosti_figure = lastnost
         tag_lastnosti_figure = lastnosti_figure + 'tag'
         if self.igra.izberi_figuro(lastnosti_figure) is None:
             pass

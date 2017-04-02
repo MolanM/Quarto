@@ -1,3 +1,5 @@
+from pomozne import *
+
 ######################################################################
 ## Igralec človek
 
@@ -22,4 +24,5 @@ class Clovek():
         self.gui.povleci_potezo(p)
 
     def gumb_klik(self,p):
-        self.gui.izberi_figuro(p)
+        (x, y) = p
+        self.gui.izberi_figuro(binarno(4*x +y))

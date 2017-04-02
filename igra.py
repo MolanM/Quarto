@@ -3,8 +3,8 @@
 
 from pomozne import *
 
-IGRALEC_1 = "IGRALEC_1"
-IGRALEC_2 = "IGRALEC_2"
+IGRALEC_1 = "1."
+IGRALEC_2 = "2."
 PRAZNO = "."
 NEODLOCENO = "neodločeno"
 NI_KONEC = "ni konec"
@@ -41,6 +41,7 @@ class Igra():
         self.izbrana_figura = None
         self.mozne_figure = []
         self.generiraj_figure()
+        self.zmagovalec = NI_KONEC
 
     def generiraj_figure(self):
         for i in range(4):
@@ -52,7 +53,8 @@ class Igra():
         """Shrani trenutno pozicijo, da se bomo lahko kasneje vrnili vanjo
            z metodo razveljavi."""
         p = [self.plosca[i][:] for i in range(4)]
-        self.zgodovina.append((p, self.na_potezi, self.izbrana_figura))
+        seznam_moznih_figur = self.mozne_figure[:]
+        self.zgodovina.append((p, self.na_potezi, self.izbrana_figura, seznam_moznih_figur, self.zmagovalec))
 
     def kopija(self):
         """Vrni kopijo te igre, brez zgodovine."""
@@ -65,12 +67,14 @@ class Igra():
         k.plosca = [self.plosca[i][:] for i in range(4)]
         k.na_potezi = self.na_potezi
         k.izbrana_figura = self.izbrana_figura
-        k.mozne_figure = self.mozne_figure
+        k.mozne_figure = self.mozne_figure[:]
+        k.zmagovalec = self.zmagovalec
         return k
 
     def razveljavi(self):
         """Razveljavi potezo in se vrni v prejšnje stanje."""
-        (self.plosca, self.na_potezi, self.izbrana_figura) = self.zgodovina.pop()
+        (self.plosca, self.na_potezi, self.izbrana_figura, seznam_mozne_figure, self.zmagovalec) = self.zgodovina.pop()
+        self.mozne_figure = seznam_mozne_figure[:]
 
     def veljavne_poteze(self):
         """Vrni seznam veljavnih potez."""
@@ -83,32 +87,34 @@ class Igra():
 
     def izberi_figuro(self, lastnosti):
         figura = self.izbrana_figura
-        if figura is None and lastnosti in self.mozne_figure:
+        if (self.zmagovalec != NI_KONEC) or (figura != None) or (lastnosti not in self.mozne_figure) or (self.na_potezi == None):
+            return None
+        else:
             self.izbrana_figura = lastnosti
             self.mozne_figure.remove(lastnosti)
             self.na_potezi = nasprotnik(self.na_potezi)
             return True #?
-        else:
-            pass
 
     def povleci_potezo(self, p):
         """Povleci potezo p, ne naredi nič, če je neveljavna.
            Vrne stanje_igre() po potezi ali None, ce je poteza neveljavna."""
         (i,j) = p
-        if (self.plosca[i][j] != PRAZNO) or (self.na_potezi == None) or (self.izbrana_figura == None):
+        if (self.zmagovalec != NI_KONEC) or (self.plosca[i][j] != PRAZNO) or (self.na_potezi == None) or (self.izbrana_figura == None):
             # neveljavna poteza
             return None
         else:
             self.shrani_pozicijo()
-            self.plosca[i][j] = self.izbrana_figura
+            figura = self.izbrana_figura
+            self.plosca[i][j] = figura
+            self.izbrana_figura = None
             (zmagovalec, trojka) = self.stanje_igre()
             if zmagovalec == NI_KONEC:
                 # Igre ni konec, zdaj je na potezi nasprotnik
                 pass
             else:
                 # Igre je konec
-                self.na_potezi = None
-            return (zmagovalec, trojka)
+                self.na_potezi = None #to je problem!!!
+            return (zmagovalec, trojka, figura)
 
     # Tabela vseh trojk, ki nastopajo v igralnem polju
     cetvorke = [
@@ -136,14 +142,15 @@ class Igra():
            - (NI_KONEC, None), če igre še ni konec
         """
         for t in Igra.cetvorke:
-            for l in range(4):
+           for l in range(4):
                 ((i1,j1),(i2,j2),(i3,j3), (i4,j4)) = t
                 p = self.plosca[i1][j1]
                 if p != PRAZNO and self.plosca[i2][j2] != PRAZNO and self.plosca[i3][j3] != PRAZNO and self.plosca[i4][j4] != PRAZNO and \
                 p[l] == self.plosca[i2][j2][l] == self.plosca[i3][j3][l] == self.plosca[i4][j4][l]:
                     # Našli smo zmagovalno cetvorko
                     if self.na_potezi != None:
-                        return (self.na_potezi, [t[0], t[1], t[2], t[3]])
+                        self.zmagovalec = self.na_potezi
+                    return (self.zmagovalec, [t[0], t[1], t[2], t[3]])
         # Ni zmagovalca, ali je igre konec?
         for i in range(4):
             for j in range(4):

@@ -1,4 +1,5 @@
 import logging
+import random
 
 from igra import IGRALEC_1, IGRALEC_2, PRAZNO, NEODLOCENO, NI_KONEC, nasprotnik
 
@@ -31,6 +32,7 @@ class Minimax:
         self.prekinitev = False # Glavno vlakno bo to nastvilo na True, če moramo nehati
         self.jaz = self.igra.na_potezi
         self.poteza = None # Sem napišemo potezo, ko jo najdemo
+        self.figura = None
         # Poženemo minimax
         (poteza, figura, vrednost) = self.minimax(self.globina, True)
         self.jaz = None
@@ -51,29 +53,47 @@ class Minimax:
         # če imamo v trojki x znakov igralca in y znakov nasprotnika (in 3-x-y praznih polj),
         # potem je taka trojka za self.jaz vredna v.
         # Trojke, ki se ne pojavljajo v slovarju, so vredne 0.
-        vrednost_trojke = {
-            (0,4) : -Minimax.ZMAGA,
-            (3,0) : Minimax.ZMAGA,
-            (0,3) : -Minimax.ZMAGA,
-            (2,0) : Minimax.ZMAGA//100,
-            (0,2) : -Minimax.ZMAGA//100,
-            (1,0) : Minimax.ZMAGA//10000,
-            (0,1) : -Minimax.ZMAGA//10000
-        }
+        #vrednost_trojke = {
+        #    (0,4) : -Minimax.ZMAGA,
+        #    (3,0) : Minimax.ZMAGA,
+        #    (0,3) : -Minimax.ZMAGA,
+        #    (2,0) : Minimax.ZMAGA//100,
+        #    (0,2) : -Minimax.ZMAGA//100,
+        #    (1,0) : Minimax.ZMAGA//10000,
+        #    (0,1) : -Minimax.ZMAGA//10000
+        #}
+
         vrednost = 0
-        for t in self.igra.cetvorke:
-            x = 1 # koliko jih imam jaz v trojki t
-            y = 0 # koliko jih ima nasprotnik v trojki t
-            for (i,j) in t:
-                if self.igra.plosca[i][j] is not PRAZNO:
-                    for k in range(4):
-                        if self.igra.plosca[i][j][k] == self.igra.izbrana_figura[k]:
-                            x += 1
-                #if self.igra.plosca[i][j] == self.jaz:
-                #    x += 1
-                #elif self.igra.plosca[i][j] == nasprotnik(self.jaz):
-                #    y += 1
-            vrednost += vrednost_trojke.get((x,y), 0)
+        #slaboskupaj = 0
+        #preostale = [0,0,0,0] #če je sodo je dobro, če je liho je slabo
+        #dobro = 0 # koliko trojk se ujema s sodo ostalimi figurami
+        #for t in self.igra.cetvorke:
+        #    for l in range(4): #ali smo zmagali?
+        #        ((i1,j1),(i2,j2),(i3,j3), (i4,j4)) = t
+        #        p = self.igra.plosca[i1][j1]
+        #        if p != PRAZNO and self.igra.plosca[i2][j2] != PRAZNO and self.igra.plosca[i3][j3] != PRAZNO and self.igra.plosca[i4][j4] != PRAZNO and \
+        #        p[l] == self.igra.plosca[i2][j2][l] == self.igra.plosca[i3][j3][l] == self.igra.plosca[i4][j4][l]:
+        #            return Minimax.ZMAGA
+        #    slabo = 0 # koliko trojk se ujema z izbrano figuro ali z liho preostalimi
+        #    for (i,j) in t:
+        #        if self.igra.plosca[i][j] is not PRAZNO:
+        #            for k in range(4):
+        #                if self.igra.plosca[i][j][k] == self.igra.izbrana_figura[k]:
+        #                    slabo += 1
+        #                for figura in self.igra.mozne_figure:
+        #                    if self.igra.plosca[i][j][k] == figura[k]:
+        #                        preostale[k] += 1
+        #        if slabo == 3:
+        #            return -Minimax.ZMAGA
+        #        slaboskupaj += slabo
+        #        slabo = 0
+        #for v in preostale:
+        #     if v % 2 == 0:
+        #        dobro += 1
+        #     else:
+        #        slaboskupaj += 1
+            #vrednost += vrednost_trojke.get((slabo,dobro), 0)
+        #vrednost = -(slaboskupaj*100)
         return vrednost
 
     def minimax(self, globina, maksimiziramo):
@@ -81,51 +101,82 @@ class Minimax:
         if self.prekinitev:
             # Sporočili so nam, da moramo prekiniti
             logging.debug ("Minimax prekinja, globina = {0}".format(globina))
-            return (None, 0)
-        (zmagovalec, lst) = self.igra.stanje_igre()
+            return (None, None, 0)
+        (zmagovalec ,lst) = self.igra.stanje_igre()
         if zmagovalec in (IGRALEC_1, IGRALEC_2, NEODLOCENO):
             # Igre je konec, vrnemo njeno vrednost
             if zmagovalec == self.jaz:
-                return (None, Minimax.ZMAGA)
+                return (None, None, Minimax.ZMAGA)
             elif zmagovalec == nasprotnik(self.jaz):
-                return (None, -Minimax.ZMAGA)
+                return (None, None, -Minimax.ZMAGA)
             else:
-                return (None, 0)
+                return (None, None, 0)
         elif zmagovalec == NI_KONEC:
             # Igre ni konec
             if globina == 0:
-                return (None, self.vrednost_pozicije())
+                return (None, None, self.vrednost_pozicije())
             else:
                 # Naredimo eno stopnjo minimax
                 if maksimiziramo:
                     # Maksimiziramo
+                    najboljse_poteze = []
                     najboljsa_poteza = None
+                    najboljsa_figura = None
                     vrednost_najboljse = -Minimax.NESKONCNO
                     for p in self.igra.veljavne_poteze():
-                        for f in self.igra.mozne_figure:
+                        if len(self.igra.mozne_figure) != 0:
+                            for f in self.igra.mozne_figure:
+                                self.igra.povleci_potezo(p)
+                                self.igra.izberi_figuro(f)
+                                vrednost = self.minimax(globina-1, not maksimiziramo)[2]
+                                self.igra.razveljavi()
+                                if vrednost > vrednost_najboljse:
+                                    vrednost_najboljse = vrednost
+                                    najboljse_poteze = []
+                                    najboljse_poteze.append((p,f))
+                                    #najboljsa_poteza = p
+                                    #najboljsa_figura = f
+                                elif vrednost == vrednost_najboljse:
+                                    najboljse_poteze.append((p,f))
+                        else:
                             self.igra.povleci_potezo(p)
-                            self.igra.izberi_figuro(f)
-                            vrednost = self.minimax(globina-1, not maksimiziramo)[1]
+                            vrednost = self.minimax(globina-1, not maksimiziramo)[2]
                             self.igra.razveljavi()
                             if vrednost > vrednost_najboljse:
                                 vrednost_najboljse = vrednost
                                 najboljsa_poteza = p
-                                najboljsa_figura = f
+                                najboljsa_figura = 'konec'
                 else:
                     # Minimiziramo
+                    najboljse_poteze = []
                     najboljsa_poteza = None
+                    najboljsa_figura = None
                     vrednost_najboljse = Minimax.NESKONCNO
                     for p in self.igra.veljavne_poteze():
-                        for f in self.igra.mozne_figure:
+                        if len(self.igra.mozne_figure) != 0:
+                            for f in self.igra.mozne_figure:
+                                self.igra.povleci_potezo(p)
+                                self.igra.izberi_figuro(f)
+                                vrednost = self.minimax(globina-1, not maksimiziramo)[2]
+                                self.igra.razveljavi()
+                                if vrednost < vrednost_najboljse:
+                                    vrednost_najboljse = vrednost
+                                    najboljse_poteze = []
+                                    najboljse_poteze.append((p,f))
+                                    #najboljsa_poteza = p
+                                    #najboljsa_figura = f
+                                elif vrednost == vrednost_najboljse:
+                                    najboljse_poteze.append((p,f))
+                        else:
                             self.igra.povleci_potezo(p)
-                            self.igra.izberi_figuro(f)
-                            vrednost = self.minimax(globina-1, not maksimiziramo)[1]
+                            vrednost = self.minimax(globina-1, not maksimiziramo)[2]
                             self.igra.razveljavi()
                             if vrednost < vrednost_najboljse:
                                 vrednost_najboljse = vrednost
                                 najboljsa_poteza = p
-                                najboljsa_figura = f
-
+                                najboljsa_figura = 'konec'
+                if len(najboljse_poteze) != 0:
+                    (najboljsa_poteza, najboljsa_figura) = random.choice(najboljse_poteze)
                 assert (najboljsa_poteza is not None), "minimax: izračunana poteza je None"
                 return (najboljsa_poteza, najboljsa_figura, vrednost_najboljse)
         else:

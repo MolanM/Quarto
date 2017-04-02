@@ -1,4 +1,5 @@
 import threading  # za vzporedno izvajanje
+import random
 
 from minimax import *
 
@@ -24,21 +25,25 @@ class Racunalnik():
         # naredili bolje (vlakno bi samo sporočilo GUI-ju, da je treba narediti potezo).
 
         # Naredimo vlakno, ki mu podamo *kopijo* igre (da ne bo zmedel GUIja):
-        self.mislec = threading.Thread(
-            target=lambda: self.algoritem.izracunaj_potezo(self.gui.igra.kopija()))
+        if self.gui.igra.izbrana_figura == None:
+            self.gui.izberi_figuro(random.choice(self.gui.igra.mozne_figure))
+        else:
+            self.mislec = threading.Thread(
+                target=lambda: self.algoritem.izracunaj_potezo(self.gui.igra.kopija()))
 
-        # Poženemo vlakno:
-        self.mislec.start()
+            # Poženemo vlakno:
+            self.mislec.start()
 
-        # Gremo preverjat, ali je bila najdena poteza:
-        self.gui.plosca.after(100, self.preveri_potezo)
+            # Gremo preverjat, ali je bila najdena poteza:
+            self.gui.plosca.after(100, self.preveri_potezo)
 
     def preveri_potezo(self):
         """Vsakih 100ms preveri, ali je algoritem že izračunal potezo."""
-        if self.algoritem.poteza is not None:
+        if (self.algoritem.poteza is not None) and (self.algoritem.figura is not None):
             # Algoritem je našel potezo, povleci jo, če ni bilo prekinitve
             self.gui.povleci_potezo(self.algoritem.poteza)
-            self.gui.izberi_figuro(0,self.algoritem.figura)
+            if self.algoritem.figura != 'konec':
+                self.gui.izberi_figuro(self.algoritem.figura)
             # Vzporedno vlakno ni več aktivno, zato ga "pozabimo"
             self.mislec = None
         else:
