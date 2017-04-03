@@ -40,16 +40,16 @@ class Gui():
         menu.add_cascade(label="Igra", menu=menu_igra)
         #menu_igra.add_command(label="Nova igra",
                               #command=lambda: self.zacni_igro())
-        menu_igra.add_command(label="X=Človek, O=Človek",
+        menu_igra.add_command(label="Človek, Človek",
                               command=lambda: self.zacni_igro(Clovek(self),
                                                               Clovek(self)))
-        menu_igra.add_command(label="X=Človek, O=Računalnik",
+        menu_igra.add_command(label="Človek, Računalnik",
                               command=lambda: self.zacni_igro(Clovek(self),
                                                               Racunalnik(self, Minimax(globina))))
-        menu_igra.add_command(label="X=Računalnik, O=Človek",
+        menu_igra.add_command(label="Računalnik, Človek",
                               command=lambda: self.zacni_igro(Racunalnik(self, Minimax(globina)),
                                                               Clovek(self)))
-        menu_igra.add_command(label="X=Računalnik, O=Računalnik",
+        menu_igra.add_command(label="Računalnik, Računalnik",
                               command=lambda: self.zacni_igro(Racunalnik(self, Minimax(globina)),
                                                               Racunalnik(self, Minimax(globina))))
 
@@ -162,50 +162,32 @@ class Gui():
                 lastnosti = binarno(i*4 + j)
                 self.narisi_gumbe([i,j], lastnosti)
 
-    def razberi_lastnosti(self, lastnosti):
-        if lastnosti[0] == '0':
-            kvadrat = True
-        else:
-            kvadrat = False
-        if lastnosti[1] == '0':
-            barva = 'yellow'
-        else:
-            barva = 'green'
-        if lastnosti[2] == '0':
-            luknja = True
-        else:
-            luknja = False
-        if lastnosti[3] == '0':
-            diagonala = True
-        else:
-            diagonala = False
-        return (barva, luknja, diagonala, kvadrat)
 
 
     def narisi_gumbe(self, p, lastnosti):
-        (barva, luknja, diagonala, kvadrat) = self.razberi_lastnosti(lastnosti)
+        (luknja, barva, diagonala, kvadrat) = lastnosti
         x = p[0] * 100
         y = p[1] * 100
         sirina = 3
-        lastnosti += 'tag'
+        oznaka = naredi_tag(lastnosti)
         if kvadrat:
-            self.gumbi.create_rectangle(x + 5, y + 5, x + 95, y + 95, width=sirina, fill=barva, tag=lastnosti)
+            self.gumbi.create_rectangle(x + 5, y + 5, x + 95, y + 95, width=sirina, fill=barva, tag=oznaka)
             if luknja:
-                self.gumbi.create_oval(x + 35, y + 35, x + 65, y + 65, width=sirina, tag=lastnosti)
+                self.gumbi.create_oval(x + 35, y + 35, x + 65, y + 65, width=sirina, tag=oznaka)
             if diagonala:
-                self.gumbi.create_line(x + 5, y + 5, x + 95, y + 95, width=sirina, tag=lastnosti)
+                self.gumbi.create_line(x + 5, y + 5, x + 95, y + 95, width=sirina, tag=oznaka)
         else:
-            self.gumbi.create_oval(x + 5, y + 5, x + 95, y + 95, width=sirina, fill=barva, tag=lastnosti)
+            self.gumbi.create_oval(x + 5, y + 5, x + 95, y + 95, width=sirina, fill=barva, tag=oznaka)
             if luknja:
-                self.gumbi.create_oval(x + 35, y + 35, x + 65, y + 65, width=sirina, tag=lastnosti)
+                self.gumbi.create_oval(x + 35, y + 35, x + 65, y + 65, width=sirina, tag=oznaka)
             if diagonala:
-                self.gumbi.create_line(x + 18, y + 18, x + 82, y + 82, width=sirina, tag=lastnosti)
+                self.gumbi.create_line(x + 18, y + 18, x + 82, y + 82, width=sirina, tag=oznaka)
 
 
 
     def narisi(self, p, figura, zmagovalni=False): #kvadrat
         """Nariši križec v polje (i, j)."""
-        (barva, luknja, diagonala, kvadrat) = self.razberi_lastnosti(figura)
+        (luknja, barva, diagonala, kvadrat) = figura
         x = p[0] * 100
         y = p[1] * 100
         sirina = (6 if zmagovalni else 3)
@@ -291,9 +273,9 @@ class Gui():
                 # Igre je konec, koncaj
                 self.koncaj_igro(zmagovalec, trojka)
 
-    def izberi_figuro(self, lastnost):
-        lastnosti_figure = lastnost
-        tag_lastnosti_figure = lastnosti_figure + 'tag'
+    def izberi_figuro(self, lastnosti):
+        lastnosti_figure = lastnosti
+        tag_lastnosti_figure = naredi_tag(lastnosti)
         if self.igra.izberi_figuro(lastnosti_figure) is None:
             pass
         else:
@@ -309,7 +291,7 @@ class Gui():
                     self.igralec_o.igraj()
 
     def narisi_gumbe_izbrana_figura(self, lastnosti):
-        (barva, luknja, diagonala, kvadrat) = self.razberi_lastnosti(lastnosti)
+        (luknja, barva, diagonala, kvadrat) = lastnosti
         sirina = 3
         if kvadrat:
             self.figura.create_rectangle(5, 5,95, 95, width=sirina, fill=barva, tag=Gui.TAG_FIGURA)
