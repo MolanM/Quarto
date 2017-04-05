@@ -96,6 +96,7 @@ class Gui():
         # Pobrišemo vse figure s polja
         self.plosca.delete(Gui.TAG_FIGURA)
         self.figura.delete(Gui.TAG_FIGURA)
+        self.plosca.delete('zmagovalna_crta')
         self.gumbi.delete('all')
         self.narisi_vse_gumbe()
         # Ustvarimo novo igro
@@ -106,18 +107,19 @@ class Gui():
         self.napis.set("Na potezi je 1.")
         self.igralec_x.igraj()
 
-    def koncaj_igro(self, zmagovalec, trojka):
+    def koncaj_igro(self, zmagovalec, cetverka):
         """Nastavi stanje igre na konec igre."""
         if zmagovalec != NEODLOCENO:
             self.napis.set("Zmagal je " + str(self.igra.zmagovalec))
+            self.narisi_zmagovalno_trojico(cetverka)
         else:
             self.napis.set("Neodločeno.")
         #if zmagovalec == IGRALEC_1:
         #    self.napis.set("Zmagal je 1.")
-        #    self.narisi_zmagovalno_trojico(zmagovalec, trojka)
+        #    self.narisi_zmagovalno_trojico(zmagovalec, cetverka)
         #elif zmagovalec == IGRALEC_2:
         #    self.napis.set("Zmagal je 2.")
-        #    self.narisi_zmagovalno_trojico(zmagovalec, trojka)
+        #    self.narisi_zmagovalno_trojico(zmagovalec, cetverka)
         #else:
         #    self.napis.set("Neodločeno.")
 
@@ -165,7 +167,11 @@ class Gui():
 
 
     def narisi_gumbe(self, p, lastnosti):
-        (luknja, barva, diagonala, kvadrat) = lastnosti
+        (luknja, proto_barva, diagonala, kvadrat) = lastnosti
+        if proto_barva:
+            barva = 'green'
+        else:
+            barva = 'yellow'
         x = p[0] * 100
         y = p[1] * 100
         sirina = 3
@@ -187,7 +193,11 @@ class Gui():
 
     def narisi(self, p, figura, zmagovalni=False): #kvadrat
         """Nariši križec v polje (i, j)."""
-        (luknja, barva, diagonala, kvadrat) = figura
+        (luknja, proto_barva, diagonala, kvadrat) = figura
+        if proto_barva:
+            barva = 'green'
+        else:
+            barva = 'yellow'
         x = p[0] * 100
         y = p[1] * 100
         sirina = (6 if zmagovalni else 3)
@@ -205,14 +215,9 @@ class Gui():
                 self.plosca.create_line(x + 18, y + 18, x + 82, y + 82, width=sirina, tag=Gui.TAG_FIGURA)
 
 
-    def narisi_zmagovalno_trojico(self, zmagovalec, trojka):
-        #TODO
-        pass
-        #for p in trojka:
-        #    if zmagovalec == IGRALEC_1:
-        #        self.narisi_X(p, zmagovalni=True)
-        #    elif zmagovalec == IGRALEC_2:
-        #        self.narisi_O(p, zmagovalni=True)
+    def narisi_zmagovalno_trojico(self, cetverka):
+        (prvi, drugi, tretji, cetrti) = cetverka
+        self.plosca.create_line(prvi[0]*100+50,prvi[1]*100+50,cetrti[0]*100+50,cetrti[1]*100+50,width = 10,fill = 'red' ,tag = 'zmagovalna_crta')
 
     def gumbi_klik(self, event):
         """Obdelaj klik na ploščo."""
@@ -263,7 +268,7 @@ class Gui():
         else:
             # Poteza je bila veljavna, narišemo jo na zaslon
             # Ugotovimo, kako nadaljevati
-            (zmagovalec, trojka, figura) = r
+            (zmagovalec, cetverka, figura) = r
             self.narisi(p, figura)
             self.figura.delete(Gui.TAG_FIGURA)
             if zmagovalec == NI_KONEC:
@@ -271,7 +276,7 @@ class Gui():
                 pass
             else:
                 # Igre je konec, koncaj
-                self.koncaj_igro(zmagovalec, trojka)
+                self.koncaj_igro(zmagovalec, cetverka)
 
     def izberi_figuro(self, lastnosti):
         lastnosti_figure = lastnosti
@@ -291,7 +296,11 @@ class Gui():
                     self.igralec_o.igraj()
 
     def narisi_gumbe_izbrana_figura(self, lastnosti):
-        (luknja, barva, diagonala, kvadrat) = lastnosti
+        (luknja, proto_barva, diagonala, kvadrat) = lastnosti
+        if proto_barva:
+            barva = 'green'
+        else:
+            barva = 'yellow'
         sirina = 3
         if kvadrat:
             self.figura.create_rectangle(5, 5,95, 95, width=sirina, fill=barva, tag=Gui.TAG_FIGURA)
