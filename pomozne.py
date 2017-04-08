@@ -2,7 +2,8 @@
 ## Pomozne funkcije
 
 def binarno(n):
-    """pretvori število v dvojiški sistem in vrne niz dolg štiri"""
+    """Pretvori število v dvojiški sistem, nato pa to pretvori v seznam Boolovih vrednosti."""
+    # vrednosti binarno predstavljajo (luknja, barva, diagonala, kvadrat)
     assert n <= 15, 'neveljavna stevilka polja'
     seznam_string = "{0:b}".format(n).zfill(4)
     seznam_bool = []
@@ -15,12 +16,9 @@ def binarno(n):
             assert False, 'napaka v seznamu lastnosti'
     return seznam_bool
 
-
-
-
 def naredi_tag(seznam):
+    """Spremeni seznam v nabor, da ga lahko uporabimo za tag figure"""
     string = ''
     for f in seznam:
         string = string + str(f)
     return string
-# vrednosti binarno predstavljajo (luknja, barva, diagonala, kvadrat)

@@ -2,10 +2,7 @@ import logging
 import random
 import operator
 
-
-
 from igra import IGRALEC_1, IGRALEC_2, PRAZNO, NEODLOCENO, NI_KONEC, nasprotnik
-
 
 ######################################################################
 ## Algoritem minimax
@@ -69,72 +66,47 @@ class Minimax:
 
         vrednost = 0
 
-        #slaboskupaj = 0
-         #če je sodo je dobro, če je liho je slabo
-        #dobro = 0 # koliko trojk se ujema s sodo ostalimi figurami
         for t in self.igra.cetvorke:
-            ((i1,j1),(i2,j2),(i3,j3),(i4,j4)) = t
+            #((i1,j1),(i2,j2),(i3,j3),(i4,j4)) = t
             lastnosti = [(0,0), (0,0), (0,0), (0,0)]
-            preostale = [0, 0, 0, 0]
             for (i, j) in t:
                 if self.igra.plosca[i][j] is not PRAZNO:
                     for k in range(4):
                         if self.igra.plosca[i][j][k] == True:
                             lastnosti[k] = tuple(map(operator.add, lastnosti[k], (1,0)))
                         else:
-                            lastnosti[k] = tuple(map(operator.add, lastnosti[k], (0, 1)))
+                            lastnosti[k] = tuple(map(operator.add, lastnosti[k], (0,1)))
             for i in range(len(lastnosti)):
                 (x,y) = lastnosti[i]
-                if x == 0 and y == 0:
-                    return 0
+                if x != 0 and y != 0:
+                    continue
                 elif x == 3:
+                    preostale = [0, 0, 0, 0]
                     if self.igra.izbrana_figura[i] == True:
-                        return -Minimax.ZMAGA/10
+                        return -Minimax.ZMAGA + 1
+                    for figura in self.igra.mozne_figure:
+                        if figura[i] == False:
+                            preostale[i] += 1
+                    if preostale[i] == 0:
+                        vrednost += Minimax.ZMAGA/100
+                    elif preostale[i] % 2 == 0:
+                        vrednost += Minimax.ZMAGA/1000
+                    else:
+                        vrednost -= Minimax.ZMAGA/1000
                 elif y == 3:
+                    preostale = [0, 0, 0, 0]
                     if self.igra.izbrana_figura[i] == False:
-                        return -Minimax.ZMAGA/10
-
-
-#                        if self.igra.plosca[i][j][k] == self.igra.izbrana_figura[k]:
-#                            lastnosti[k] = lastnosti[k] + 1
-#                        for figura in self.igra.mozne_figure:
-#                            if self.igra.plosca[i][j][k] != figura[k]:
-#                                pass
-
-            #for l in lastnosti:
-            #    if l == 3:
-            #        return -Minimax.ZMAGA/10
-            #for j in preostale:
-            #    if j == 3:
-            #        pass
-
-
+                        return -Minimax.ZMAGA + 1
+                    for figura in self.igra.mozne_figure:
+                        if figura[i] == True:
+                            preostale[i] += 1
+                    if preostale[i] == 0:
+                        vrednost += Minimax.ZMAGA/100
+                    elif preostale[i] % 2 == 0:
+                        vrednost += Minimax.ZMAGA/1000
+                    else:
+                        vrednost -= Minimax.ZMAGA/1000
         return vrednost
-
-        #        p = self.igra.plosca[i1][j1]
-        #        if p != PRAZNO and self.igra.plosca[i2][j2] != PRAZNO and self.igra.plosca[i3][j3] != PRAZNO and self.igra.plosca[i4][j4] != PRAZNO and \
-        #        p[l] == self.igra.plosca[i2][j2][l] == self.igra.plosca[i3][j3][l] == self.igra.plosca[i4][j4][l]:
-        #            return Minimax.ZMAGA
-        #    slabo = 0 # koliko trojk se ujema z izbrano figuro ali z liho preostalimi
-        #    for (i,j) in t:
-        #        if self.igra.plosca[i][j] is not PRAZNO:
-        #            for k in range(4):
-        #                if self.igra.plosca[i][j][k] == self.igra.izbrana_figura[k]:
-        #                    slabo += 1
-        #                for figura in self.igra.mozne_figure:
-        #                    if self.igra.plosca[i][j][k] == figura[k]:
-        #                        preostale[k] += 1
-        #        if slabo == 3:
-        #            return -Minimax.ZMAGA
-        #        slaboskupaj += slabo
-        #        slabo = 0
-        #for v in preostale:
-        #     if v % 2 == 0:
-        #        dobro += 1
-        #     else:
-        #        slaboskupaj += 1
-            #vrednost += vrednost_trojke.get((slabo,dobro), 0)
-        #vrednost = -(slaboskupaj*100)
 
     def minimax(self, globina, maksimiziramo):
         """Glavna metoda minimax."""
@@ -216,8 +188,10 @@ class Minimax:
                                 najboljsa_poteza = p
                                 najboljsa_figura = 'konec'
                 if len(najboljse_poteze) != 0:
-                    #(najboljsa_poteza, najboljsa_figura) = random.choice(najboljse_poteze)
-                    (najboljsa_poteza, najboljsa_figura) = najboljse_poteze[0]
+                    # Naključna poteza izmed tistih, ki so imele enako najboljšo vrednost
+                    (najboljsa_poteza, najboljsa_figura) = random.choice(najboljse_poteze)
+                    # Prva možna poteza
+                    #(najboljsa_poteza, najboljsa_figura) = najboljse_poteze[0]
                 assert (najboljsa_poteza is not None), "minimax: izračunana poteza je None"
                 return (najboljsa_poteza, najboljsa_figura, vrednost_najboljse)
         else:

@@ -20,6 +20,9 @@ class Gui():
     # Oznaka za črte
     TAG_OKVIR = 'okvir'
 
+    # Oznaka za zmagovalni okvir
+    TAG_ZMAGA = 'zmagovalniokvir'
+
     # Velikost polja
     VELIKOST_POLJA = 100
 
@@ -40,16 +43,16 @@ class Gui():
         menu.add_cascade(label="Igra", menu=menu_igra)
         #menu_igra.add_command(label="Nova igra",
                               #command=lambda: self.zacni_igro())
-        menu_igra.add_command(label="Človek, Človek",
+        menu_igra.add_command(label="Človek vs. Človek",
                               command=lambda: self.zacni_igro(Clovek(self),
                                                               Clovek(self)))
-        menu_igra.add_command(label="Človek, Računalnik",
+        menu_igra.add_command(label="Človek vs. Računalnik",
                               command=lambda: self.zacni_igro(Clovek(self),
                                                               Racunalnik(self, Minimax(globina))))
-        menu_igra.add_command(label="Računalnik, Človek",
+        menu_igra.add_command(label="Računalnik vs. Človek",
                               command=lambda: self.zacni_igro(Racunalnik(self, Minimax(globina)),
                                                               Clovek(self)))
-        menu_igra.add_command(label="Računalnik, Računalnik",
+        menu_igra.add_command(label="Računalnik vs. Računalnik",
                               command=lambda: self.zacni_igro(Racunalnik(self, Minimax(globina)),
                                                               Racunalnik(self, Minimax(globina))))
 
@@ -62,11 +65,13 @@ class Gui():
         self.plosca.grid(row=1, column=0)
 
         # Gumbi za izbiro figure
-
         self.gumbi = tkinter.Canvas(master, width=4*Gui.VELIKOST_POLJA, height=4*Gui.VELIKOST_POLJA)
         self.gumbi.grid(row=2, column=0)
 
-        #platno za prikaz izbranege figure
+        # Napis nad izbrano figuro
+        tkinter.Label(master, text='Izbrana figura:').grid(row=0, column=1)
+
+        # Platno za prikaz izbrane figure
         self.figura = tkinter.Canvas(master, width = Gui.VELIKOST_POLJA, height=4* Gui.VELIKOST_POLJA)
         self.figura.grid(row=1,column = 1)
 
@@ -96,7 +101,7 @@ class Gui():
         # Pobrišemo vse figure s polja
         self.plosca.delete(Gui.TAG_FIGURA)
         self.figura.delete(Gui.TAG_FIGURA)
-        self.plosca.delete('zmagovalna_crta')
+        self.plosca.delete(Gui.TAG_ZMAGA)
         self.gumbi.delete('all')
         self.narisi_vse_gumbe()
         # Ustvarimo novo igro
@@ -114,14 +119,6 @@ class Gui():
             self.narisi_zmagovalno_trojico(cetverka)
         else:
             self.napis.set("Neodločeno.")
-        #if zmagovalec == IGRALEC_1:
-        #    self.napis.set("Zmagal je 1.")
-        #    self.narisi_zmagovalno_trojico(zmagovalec, cetverka)
-        #elif zmagovalec == IGRALEC_2:
-        #    self.napis.set("Zmagal je 2.")
-        #    self.narisi_zmagovalno_trojico(zmagovalec, cetverka)
-        #else:
-        #    self.napis.set("Neodločeno.")
 
     def prekini_igralce(self):
         """Sporoči igralcem, da morajo nehati razmišljati."""
@@ -163,8 +160,6 @@ class Gui():
             for j in range(4):
                 lastnosti = binarno(i*4 + j)
                 self.narisi_gumbe([i,j], lastnosti)
-
-
 
     def narisi_gumbe(self, p, lastnosti):
         (luknja, proto_barva, diagonala, kvadrat) = lastnosti
@@ -217,7 +212,13 @@ class Gui():
 
     def narisi_zmagovalno_trojico(self, cetverka):
         (prvi, drugi, tretji, cetrti) = cetverka
-        self.plosca.create_line(prvi[0]*100+50,prvi[1]*100+50,cetrti[0]*100+50,cetrti[1]*100+50,width = 10,fill = 'red' ,tag = 'zmagovalna_crta')
+        self.plosca.create_rectangle(prvi[0]*100, prvi[1]*100, prvi[0]*100 + 100, prvi[1]*100 + 100, outline = 'red', fill='red', tag=Gui.TAG_ZMAGA)
+        self.plosca.create_rectangle(drugi[0]*100, drugi[1]*100, drugi[0]*100 + 100, drugi[1]*100 + 100, outline = 'red', fill='red', tag=Gui.TAG_ZMAGA)
+        self.plosca.create_rectangle(tretji[0]*100, tretji[1]*100, tretji[0]*100 + 100, tretji[1]*100 + 100, outline = 'red', fill='red', tag=Gui.TAG_ZMAGA)
+        self.plosca.create_rectangle(cetrti[0]*100, cetrti[1]*100, cetrti[0]*100 + 100, cetrti[1]*100 + 100, outline = 'red', fill='red', tag=Gui.TAG_ZMAGA)
+        self.plosca.tag_lower(Gui.TAG_ZMAGA)
+        #self.plosca.create_line(prvi[0] * 100 + 50, prvi[1] * 100 + 50, cetrti[0] * 100 + 50, cetrti[1] * 100 + 50,
+        #                        width=10, fill='red', tag=Gui.TAG_ZMAGA)
 
     def gumbi_klik(self, event):
         """Obdelaj klik na ploščo."""

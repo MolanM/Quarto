@@ -1,5 +1,5 @@
 import threading  # za vzporedno izvajanje
-import random
+import random # za naključen izbor prve poteze
 
 from minimax import *
 
@@ -26,7 +26,10 @@ class Racunalnik():
 
         # Naredimo vlakno, ki mu podamo *kopijo* igre (da ne bo zmedel GUIja):
         if self.gui.igra.izbrana_figura == None:
+            # Naključen izbor prve igralne figure
             self.gui.izberi_figuro(random.choice(self.gui.igra.mozne_figure))
+            # Izbor prve možne igralne figure
+            #self.gui.izberi_figuro(self.gui.igra.mozne_figure[0])
         else:
             self.mislec = threading.Thread(
                 target=lambda: self.algoritem.izracunaj_potezo(self.gui.igra.kopija()))
@@ -61,8 +64,9 @@ class Racunalnik():
             self.mislec = None
 
     def klik(self, p):
-        # Računalnik ignorira klike
+        # Računalnik ignorira klike na igralno ploščo
         pass
 
     def gumb_klik(self, p):
+        # Računalnik ignorira klike na proste figure
         pass

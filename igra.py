@@ -113,7 +113,7 @@ class Igra():
                 pass
             else:
                 # Igre je konec
-                self.na_potezi = None #to je problem!!!
+                self.na_potezi = None
             return (zmagovalec, trojka, figura)
 
     # Tabela vseh trojk, ki nastopajo v igralnem polju

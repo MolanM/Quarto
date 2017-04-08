@@ -24,5 +24,6 @@ class Clovek():
         self.gui.povleci_potezo(p)
 
     def gumb_klik(self,p):
+        # Izberemo figuro (na katero smo kliknili), če lahko.
         (x, y) = p
         self.gui.izberi_figuro(binarno(4*x +y))
