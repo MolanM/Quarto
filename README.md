@@ -3,17 +3,23 @@
 Za projektno nalogo pri Programiranju 2 bova izdelala igro Quarto v programskem jeziku Python 3.
 
 Igra je ločena v šest datotek:
-* quarto.py
-* igra.py
-* clovek.py
-* racunalnik.py
-* pomozne.py
-* minimax.py
+1 quarto.py
+ * Glavni program (GUI)
+2 igra.py
+ * Pravila igre
+3 clovek.py
+ * Cloveški igralec
+4 racunalnik.py
+ * Racunalnik
+5 pomozne.py
+ * Uporabljene pomožne funkcije
+6 minimax.py
+ * Minmax algoritem
 
 ## Pravila igre:
 [Hiter opis igre v angleščini](https://en.wikipedia.org/wiki/Quarto_(board_game))
 
-Quarto je namizna igra za dva igralca. Igra se na plošči z 4x4 polji. Obstaja 16 različnih figur - vsaka ima 4 lastnosti:
+Quarto je namizna igra za dva igralca. Igra se na plošči s 4x4 polji. Obstaja 16 različnih figur - vsaka ima 4 lastnosti:
 * Kvadrat ali krog
 * Rumena ali zelena
 * Ima ali nima luknje (krogec v sredini)
