@@ -2,7 +2,7 @@ import logging
 import random
 import operator
 
-from igra import IGRALEC_1, IGRALEC_2, PRAZNO, NEODLOCENO, NI_KONEC, nasprotnik
+from igra import PRVI_IGRALEC, DRUGI_IGRALEC, PRAZNO, NEODLOCENO, NI_KONEC, nasprotnik
 
 ######################################################################
 ## Algoritem minimax
@@ -49,12 +49,12 @@ class Minimax:
     NESKONCNO = ZMAGA + 1 # Več kot zmaga
 
     def vrednost_pozicije(self):
-        """Ocena vrednosti pozicije: sešteje vrednosti vseh trojk na plošči."""
-        # Slovar, ki pove, koliko so vredne posamezne trojke, kjer "(x,y) : v" pomeni:
-        # če imamo v trojki x znakov igralca in y znakov nasprotnika (in 3-x-y praznih polj),
-        # potem je taka trojka za self.jaz vredna v.
-        # Trojke, ki se ne pojavljajo v slovarju, so vredne 0.
-        #vrednost_trojke = {
+        """Ocena vrednosti pozicije: sešteje vrednosti vseh četvork na plošči."""
+        # Slovar, ki pove, koliko so vredne posamezne četvorke, kjer "(x,y) : v" pomeni:
+        # če imamo v četvorki x znakov igralca in y znakov nasprotnika (in 3-x-y praznih polj),
+        # potem je taka četvorka za self.jaz vredna v.
+        # Četvorke, ki se ne pojavljajo v slovarju, so vredne 0.
+        #vrednost_pozicije = {
         #    (0,4) : -Minimax.ZMAGA,
         #    (3,0) : Minimax.ZMAGA,
         #    (0,3) : -Minimax.ZMAGA,
@@ -115,7 +115,7 @@ class Minimax:
             logging.debug ("Minimax prekinja, globina = {0}".format(globina))
             return (None, None, 0)
         (zmagovalec ,lst) = self.igra.stanje_igre()
-        if zmagovalec in (IGRALEC_1, IGRALEC_2, NEODLOCENO):
+        if zmagovalec in (PRVI_IGRALEC, DRUGI_IGRALEC, NEODLOCENO):
             # Igre je konec, vrnemo njeno vrednost
             if zmagovalec == self.jaz:
                 return (None, None, Minimax.ZMAGA)
