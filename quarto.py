@@ -3,7 +3,7 @@ import argparse   # za argumente iz ukazne vrstice
 import logging    # za odpravljanje napak
 import random
 
-MINIMAX_GLOBINA = 2
+MINIMAX_GLOBINA = 3
 zelene = ('midnight blue', 'navy', 'cornflower blue', 'dark slate blue',
     'slate blue', 'medium slate blue', 'light slate blue', 'medium blue', 'royal blue',  'blue',
     'dodger blue', 'deep sky blue', 'sky blue', 'light sky blue', 'steel blue', 'light steel blue',
@@ -30,6 +30,7 @@ from pomozne import *
 from minimax import *
 from racunalnik import *
 ######################################################################
+
 ## Uporabniški vmesnik
 
 class Gui():
@@ -43,10 +44,11 @@ class Gui():
     # Oznaka za zmagovalni okvir
     TAG_ZMAGA = 'zmagovalniokvir'
 
-    # Velikost polja
     VELIKOST_POLJA = 100
 
+
     def __init__(self, master, globina):
+
         self.igralec_1 = None # Objekt, ki igra igro kot prvi igralec (nastavimo ob začetku igre)
         self.igralec_2 = None # Objekt, ki igra igro kot drugi igralec (nastavimo ob začetku igre)
         self.igra = None # Objekt, ki predstavlja igro (nastavimo ob začetku igre)
@@ -85,9 +87,9 @@ class Gui():
         self.plosca.grid(row=1, column=0)
 
         # Gumbi za izbiro figure
-		#tkinter.Label(master, text='Mozne figure:').grid(row=0, column=3)
         self.gumbi = tkinter.Canvas(master, width=4*Gui.VELIKOST_POLJA, height=4*Gui.VELIKOST_POLJA)
         self.gumbi.grid(row=1, column=3)
+        tkinter.Label(master, text='Možne figure:').grid(row=0, column=3)
 
         # Napis nad izbrano figuro
         tkinter.Label(master, text='Izbrana figura:').grid(row=0, column=1)
@@ -101,6 +103,11 @@ class Gui():
         self.narisi_crte()
         self.narisi_vse_gumbe()
 
+        #spreminjanje velikosti polja
+        self.plosca.bind("<Configure>", self.resize)
+        self.height = self.plosca.winfo_reqheight()
+        self.width = self.plosca.winfo_reqwidth()
+
         # Naročimo se na dogodek Button-1 na self.plosca,
         self.plosca.bind("<Button-1>", self.plosca_klik)
 
@@ -109,6 +116,14 @@ class Gui():
 
         # Prični igro v načinu človek proti računalniku
         self.zacni_igro(Clovek(self), Racunalnik(self, Minimax(globina)), "Človek vs. Računalnik", master)
+
+    def resize(self,event):
+        root.update()
+        geo = root.geometry()
+        print(geo)
+        self.height = event.height
+        self.width = event.width
+        print(self.height,self.width)
 
 
     def zacni_igro(self, igralec_1, igralec_2, nacin_igre, master):
@@ -169,7 +184,7 @@ class Gui():
         self.plosca.create_line(0*d, 1*d, 4*d, 1*d, tag=Gui.TAG_OKVIR)
         self.plosca.create_line(0*d, 2*d, 4*d, 2*d, tag=Gui.TAG_OKVIR)
         self.plosca.create_line(0*d, 3*d, 4*d, 3*d, tag=Gui.TAG_OKVIR)
-        self.plosca.create_line(0*d, 4*d, 4*d, 4*d, tag=Gui.TAG_OKVIR)
+        #self.plosca.create_line(0*d, 4*d, 4*d, 4*d, tag=Gui.TAG_OKVIR)
 
     def narisi_vse_gumbe(self):
         self.gumbi.delete(Gui.TAG_OKVIR)
@@ -191,22 +206,23 @@ class Gui():
             barva = barva1
         else:
             barva = barva2
-        x = p[0] * 100
-        y = p[1] * 100
+        x = p[0] * Gui.VELIKOST_POLJA
+        y = p[1] * Gui.VELIKOST_POLJA
         sirina = 3
         oznaka = naredi_tag(lastnosti)
         if kvadrat:
-            self.gumbi.create_rectangle(x + 5, y + 5, x + 95, y + 95, width=sirina, fill=barva, tag=oznaka)
+            self.gumbi.create_rectangle(x + 5, y + 5, x + (Gui.VELIKOST_POLJA-5), y + (Gui.VELIKOST_POLJA-5), width=sirina, fill=barva, tag=oznaka)
             if luknja:
-                self.gumbi.create_oval(x + 35, y + 35, x + 65, y + 65, width=sirina, tag=oznaka)
+                self.gumbi.create_oval(x + (Gui.VELIKOST_POLJA/3), y + (Gui.VELIKOST_POLJA/3), x + (Gui.VELIKOST_POLJA/3)*2, y + (Gui.VELIKOST_POLJA/3)*2, width=sirina, tag=oznaka)
             if diagonala:
-                self.gumbi.create_line(x + 5, y + 5, x + 95, y + 95, width=sirina, tag=oznaka)
+                self.gumbi.create_line(x + Gui.VELIKOST_POLJA / 2, y + 5, x + Gui.VELIKOST_POLJA / 2,
+                                       y + Gui.VELIKOST_POLJA - 5, width=sirina, tag=oznaka)
         else:
-            self.gumbi.create_oval(x + 5, y + 5, x + 95, y + 95, width=sirina, fill=barva, tag=oznaka)
+            self.gumbi.create_oval(x + 5, y + 5, x + (Gui.VELIKOST_POLJA-5), y + (Gui.VELIKOST_POLJA-5), width=sirina, fill=barva, tag=oznaka)
             if luknja:
-                self.gumbi.create_oval(x + 35, y + 35, x + 65, y + 65, width=sirina, tag=oznaka)
+                self.gumbi.create_oval(x + (Gui.VELIKOST_POLJA/3), y + (Gui.VELIKOST_POLJA/3), x + (Gui.VELIKOST_POLJA/3)*2, y + (Gui.VELIKOST_POLJA/3)*2, width=sirina, tag=oznaka)
             if diagonala:
-                self.gumbi.create_line(x + 18, y + 18, x + 82, y + 82, width=sirina, tag=oznaka)
+                self.gumbi.create_line(x + Gui.VELIKOST_POLJA/2, y + 5 , x + Gui.VELIKOST_POLJA/2, y + Gui.VELIKOST_POLJA -5 , width=sirina, tag=oznaka)
 
 
 
@@ -217,39 +233,41 @@ class Gui():
             barva = barva1
         else:
             barva = barva2
-        x = p[0] * 100
-        y = p[1] * 100
+        x = p[0] * Gui.VELIKOST_POLJA
+        y = p[1] * Gui.VELIKOST_POLJA
         sirina = (6 if zmagovalni else 3)
         if kvadrat:
-            self.plosca.create_rectangle(x + 5, y + 5, x + 95, y + 95, width=sirina, fill=barva, tag=Gui.TAG_FIGURA)
+            self.plosca.create_rectangle(x + 5, y + 5, x + (Gui.VELIKOST_POLJA-5), y + (Gui.VELIKOST_POLJA-5), width=sirina, fill=barva, tag=Gui.TAG_FIGURA)
             if luknja:
-                self.plosca.create_oval(x + 35, y + 35, x + 65, y + 65, width=sirina, tag=Gui.TAG_FIGURA)
+                self.plosca.create_oval(x + (Gui.VELIKOST_POLJA/3), y + (Gui.VELIKOST_POLJA/3), x + (Gui.VELIKOST_POLJA/3)*2, y + (Gui.VELIKOST_POLJA/3)*2, width=sirina, tag=Gui.TAG_FIGURA)
             if diagonala:
-                self.plosca.create_line(x + 5, y + 5, x + 95, y + 95, width=sirina, tag=Gui.TAG_FIGURA)
+                self.plosca.create_line(x + Gui.VELIKOST_POLJA / 2, y + 5, x + Gui.VELIKOST_POLJA / 2,
+                                        y + Gui.VELIKOST_POLJA - 5, width=sirina, tag=Gui.TAG_FIGURA)
         else:
-            self.plosca.create_oval(x + 5, y + 5, x + 95, y + 95, width=sirina, fill=barva, tag=Gui.TAG_FIGURA)
+            self.plosca.create_oval(x + 5, y + 5, x + (Gui.VELIKOST_POLJA-5), y + (Gui.VELIKOST_POLJA-5), width=sirina, fill=barva, tag=Gui.TAG_FIGURA)
             if luknja:
-                self.plosca.create_oval(x + 35, y + 35, x + 65, y + 65, width=sirina, tag=Gui.TAG_FIGURA)
+                self.plosca.create_oval(x + (Gui.VELIKOST_POLJA/3), y + (Gui.VELIKOST_POLJA/3), x + (Gui.VELIKOST_POLJA/3)*2, y + (Gui.VELIKOST_POLJA/3)*2, width=sirina, tag=Gui.TAG_FIGURA)
             if diagonala:
-                self.plosca.create_line(x + 18, y + 18, x + 82, y + 82, width=sirina, tag=Gui.TAG_FIGURA)
+                self.plosca.create_line(x + Gui.VELIKOST_POLJA / 2, y + 5, x + Gui.VELIKOST_POLJA / 2,
+                                       y + Gui.VELIKOST_POLJA - 5, width=sirina, tag=Gui.TAG_FIGURA)
 
 
     def narisi_zmagovalno_cetvorko(self, cetverka):
         (prvi, drugi, tretji, cetrti) = cetverka
-        self.plosca.create_rectangle(prvi[0]*100, prvi[1]*100, prvi[0]*100 + 100, prvi[1]*100 + 100, outline = barva3, fill=barva3, tag=Gui.TAG_ZMAGA)
-        self.plosca.create_rectangle(drugi[0]*100, drugi[1]*100, drugi[0]*100 + 100, drugi[1]*100 + 100, outline = barva3, fill=barva3, tag=Gui.TAG_ZMAGA)
-        self.plosca.create_rectangle(tretji[0]*100, tretji[1]*100, tretji[0]*100 + 100, tretji[1]*100 + 100, outline = barva3, fill=barva3, tag=Gui.TAG_ZMAGA)
-        self.plosca.create_rectangle(cetrti[0]*100, cetrti[1]*100, cetrti[0]*100 + 100, cetrti[1]*100 + 100, outline = barva3, fill=barva3, tag=Gui.TAG_ZMAGA)
+        self.plosca.create_rectangle(prvi[0]*Gui.VELIKOST_POLJA, prvi[1]*Gui.VELIKOST_POLJA, prvi[0]*Gui.VELIKOST_POLJA + Gui.VELIKOST_POLJA, prvi[1]*Gui.VELIKOST_POLJA + Gui.VELIKOST_POLJA, outline = barva3, fill=barva3, tag=Gui.TAG_ZMAGA)
+        self.plosca.create_rectangle(drugi[0]*Gui.VELIKOST_POLJA, drugi[1]*Gui.VELIKOST_POLJA, drugi[0]*Gui.VELIKOST_POLJA + Gui.VELIKOST_POLJA, drugi[1]*Gui.VELIKOST_POLJA + Gui.VELIKOST_POLJA, outline = barva3, fill=barva3, tag=Gui.TAG_ZMAGA)
+        self.plosca.create_rectangle(tretji[0]*Gui.VELIKOST_POLJA, tretji[1]*Gui.VELIKOST_POLJA, tretji[0]*Gui.VELIKOST_POLJA + Gui.VELIKOST_POLJA, tretji[1]*Gui.VELIKOST_POLJA + Gui.VELIKOST_POLJA, outline = barva3, fill=barva3, tag=Gui.TAG_ZMAGA)
+        self.plosca.create_rectangle(cetrti[0]*Gui.VELIKOST_POLJA, cetrti[1]*Gui.VELIKOST_POLJA, cetrti[0]*Gui.VELIKOST_POLJA + Gui.VELIKOST_POLJA, cetrti[1]*Gui.VELIKOST_POLJA + Gui.VELIKOST_POLJA, outline = barva3, fill=barva3, tag=Gui.TAG_ZMAGA)
         self.plosca.tag_lower(Gui.TAG_ZMAGA)
-        #self.plosca.create_line(prvi[0] * 100 + 50, prvi[1] * 100 + 50, cetrti[0] * 100 + 50, cetrti[1] * 100 + 50,
+        #self.plosca.create_line(prvi[0] * Gui.VELIKOST_POLJA + 50, prvi[1] * Gui.VELIKOST_POLJA + 50, cetrti[0] * Gui.VELIKOST_POLJA + 50, cetrti[1] * Gui.VELIKOST_POLJA + 50,
         #                        width=10, fill=barva3, tag=Gui.TAG_ZMAGA)
 
     def gumbi_klik(self, event):
         """Obdelaj klik na ploščo."""
         # Tistemu, ki je na potezi, povemo, da je uporabnik kliknil na ploščo.
         # Podamo mu potezo p.
-        i = event.x // 100
-        j = event.y // 100
+        i = event.x // Gui.VELIKOST_POLJA
+        j = event.y // Gui.VELIKOST_POLJA
         if 0 <= i <= 3 and 0 <= j <= 3:
             if self.igra.na_potezi == PRVI_IGRALEC:
                 self.igralec_1.gumb_klik((i, j))
@@ -266,8 +284,8 @@ class Gui():
         """Obdelaj klik na ploščo."""
         # Tistemu, ki je na potezi, povemo, da je uporabnik kliknil na ploščo.
         # Podamo mu potezo p.
-        i = event.x // 100
-        j = event.y // 100
+        i = event.x // Gui.VELIKOST_POLJA
+        j = event.y // Gui.VELIKOST_POLJA
         if 0 <= i <= 3 and 0 <= j <= 3:
             if self.igra.na_potezi == PRVI_IGRALEC:
                 self.igralec_1.klik((i,j))
@@ -328,17 +346,19 @@ class Gui():
             barva = barva2
         sirina = 3
         if kvadrat:
-            self.figura.create_rectangle(5, 5,95, 95, width=sirina, fill=barva, tag=Gui.TAG_FIGURA)
+            self.figura.create_rectangle(5, 5,(Gui.VELIKOST_POLJA-5), (Gui.VELIKOST_POLJA-5), width=sirina, fill=barva, tag=Gui.TAG_FIGURA)
             if luknja:
-                self.figura.create_oval(35, 35, 65, 65, width=sirina, tag=Gui.TAG_FIGURA)
+                self.figura.create_oval((Gui.VELIKOST_POLJA/3), (Gui.VELIKOST_POLJA/3), (Gui.VELIKOST_POLJA/3)*2, (Gui.VELIKOST_POLJA/3)*2, width=sirina, tag=Gui.TAG_FIGURA)
             if diagonala:
-                self.figura.create_line(5,5,95, 95, width=sirina, tag=Gui.TAG_FIGURA)
+                self.figura.create_line(Gui.VELIKOST_POLJA / 2, 5, Gui.VELIKOST_POLJA / 2,
+                                        Gui.VELIKOST_POLJA - 5, width=sirina, tag=Gui.TAG_FIGURA)
         else:
-            self.figura.create_oval(5, 5, 95,95, width=sirina, fill=barva, tag=Gui.TAG_FIGURA)
+            self.figura.create_oval(5, 5, (Gui.VELIKOST_POLJA-5),(Gui.VELIKOST_POLJA-5), width=sirina, fill=barva, tag=Gui.TAG_FIGURA)
             if luknja:
-                self.figura.create_oval(35,35, 65,65, width=sirina, tag=Gui.TAG_FIGURA)
+                self.figura.create_oval((Gui.VELIKOST_POLJA/3),(Gui.VELIKOST_POLJA/3), (Gui.VELIKOST_POLJA/3)*2,(Gui.VELIKOST_POLJA/3)*2, width=sirina, tag=Gui.TAG_FIGURA)
             if diagonala:
-                self.figura.create_line(18, 18, 82, 82, width=sirina, tag=Gui.TAG_FIGURA)
+                self.figura.create_line(Gui.VELIKOST_POLJA / 2, 5, Gui.VELIKOST_POLJA / 2,
+                                       Gui.VELIKOST_POLJA - 5, width=sirina, tag=Gui.TAG_FIGURA)
 
 
 

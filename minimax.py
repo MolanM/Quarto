@@ -34,7 +34,7 @@ class Minimax:
         self.poteza = None # Sem napišemo potezo, ko jo najdemo
         self.figura = None
         # Poženemo minimax
-        (poteza, figura, vrednost) = self.minimax(self.globina, True)
+        (poteza, figura, vrednost) = self.minimax(self.globina, True, -Minimax.NESKONCNO, Minimax.NESKONCNO)
         self.jaz = None
         self.igra = None
         if not self.prekinitev:
@@ -108,7 +108,7 @@ class Minimax:
                         vrednost -= Minimax.ZMAGA/1000
         return vrednost
 
-    def minimax(self, globina, maksimiziramo):
+    def minimax(self, globina, maksimiziramo, alfa, beta):
         """Glavna metoda minimax."""
         if self.prekinitev:
             # Sporočili so nam, da moramo prekiniti
@@ -140,7 +140,7 @@ class Minimax:
                             for f in self.igra.mozne_figure:
                                 self.igra.povleci_potezo(p)
                                 self.igra.izberi_figuro(f)
-                                vrednost = self.minimax(globina-1, not maksimiziramo)[2]
+                                vrednost = self.minimax(globina-1, not maksimiziramo,alfa,beta)[2]
                                 self.igra.razveljavi()
                                 if vrednost > vrednost_najboljse:
                                     vrednost_najboljse = vrednost
@@ -150,14 +150,18 @@ class Minimax:
                                     #najboljsa_figura = f
                                 elif vrednost == vrednost_najboljse:
                                     najboljse_poteze.append((p,f))
+                                alfa =max (alfa,vrednost_najboljse)
+                                if beta <= alfa:
+                                    break
                         else:
                             self.igra.povleci_potezo(p)
-                            vrednost = self.minimax(globina-1, not maksimiziramo)[2]
+                            vrednost = self.minimax(globina-1, not maksimiziramo,alfa,beta)[2]
                             self.igra.razveljavi()
                             if vrednost > vrednost_najboljse:
                                 vrednost_najboljse = vrednost
                                 najboljsa_poteza = p
                                 najboljsa_figura = 'konec'
+                            alfa = max(alfa,vrednost_najboljse)
                 else:
                     # Minimiziramo
                     najboljse_poteze = []
@@ -169,7 +173,7 @@ class Minimax:
                             for f in self.igra.mozne_figure:
                                 self.igra.povleci_potezo(p)
                                 self.igra.izberi_figuro(f)
-                                vrednost = self.minimax(globina-1, not maksimiziramo)[2]
+                                vrednost = self.minimax(globina-1, not maksimiziramo,alfa,beta)[2]
                                 self.igra.razveljavi()
                                 if vrednost < vrednost_najboljse:
                                     vrednost_najboljse = vrednost
@@ -179,14 +183,18 @@ class Minimax:
                                     #najboljsa_figura = f
                                 elif vrednost == vrednost_najboljse:
                                     najboljse_poteze.append((p,f))
+                                beta = min(beta,vrednost_najboljse)
+                                if beta <= alfa:
+                                    break
                         else:
                             self.igra.povleci_potezo(p)
-                            vrednost = self.minimax(globina-1, not maksimiziramo)[2]
+                            vrednost = self.minimax(globina-1, not maksimiziramo,alfa,beta)[2]
                             self.igra.razveljavi()
                             if vrednost < vrednost_najboljse:
                                 vrednost_najboljse = vrednost
                                 najboljsa_poteza = p
                                 najboljsa_figura = 'konec'
+                            beta = min(beta, vrednost_najboljse)
                 if len(najboljse_poteze) != 0:
                     # Naključna poteza izmed tistih, ki so imele enako najboljšo vrednost
                     (najboljsa_poteza, najboljsa_figura) = random.choice(najboljse_poteze)
