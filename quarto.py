@@ -5,6 +5,7 @@ import random
 import re # za About okno
 
 MINIMAX_GLOBINA = 2
+
 zelene = ('midnight blue', 'navy', 'cornflower blue', 'dark slate blue',
     'slate blue', 'medium slate blue', 'light slate blue', 'medium blue', 'royal blue',  'blue',
     'dodger blue', 'deep sky blue', 'sky blue', 'light sky blue', 'steel blue', 'light steel blue',
@@ -20,9 +21,6 @@ rdece = ('coral', 'light coral', 'tomato', 'orange red', 'red', 'hot pink', 'dee
 
 # opis načina igre se določi med igro
 IGRA_QUARTO = ""
-
-MIN_SIRINA = 1150
-MIN_VISINA = 25
 
 from igra import *
 from clovek import *
@@ -40,8 +38,6 @@ class Gui():
 
     # Oznaka za črte
     TAG_OKVIR = 'okvir'
-
-    OKVIR = 5
 
     # Oznaka za zmagovalni okvir
     TAG_ZMAGA = 'zmagovalniokvir'
@@ -85,14 +81,14 @@ class Gui():
         menu.add_cascade(label="Pomoč", menu=helpmenu)
 
         #Frame za napise:
-        self.frame1 = tkinter.Frame(master,width=0.8 * MIN_SIRINA,height=MIN_VISINA,
-                                    relief=tkinter.GROOVE,  borderwidth=Gui.OKVIR)
+        self.frame1 = tkinter.Frame(master,width=900,height=50,
+                                    relief=tkinter.GROOVE,  borderwidth=5)
         self.frame1.pack(side=tkinter.TOP, anchor=tkinter.NW, fill = tkinter.X)
         #self.frame1.grid_propagate(0)
 
         #Frame za igro:
         self.frame2 = tkinter.Frame(master, width=8*self.VELIKOST_POLJA, height=7*self.VELIKOST_POLJA,
-                                    relief=tkinter.GROOVE, borderwidth=Gui.OKVIR)
+                                    relief=tkinter.GROOVE, borderwidth=5)
 
         self.frame2.pack(fill=tkinter.BOTH, expand=1, side=tkinter.BOTTOM)
 
@@ -107,6 +103,7 @@ class Gui():
 
         # Napis nad izbrano igralno ploščo
         tkinter.Label(self.frame1, text='Igralna plošča:').pack(side = tkinter.LEFT, expand = 1)
+
 
         # Napis nad izbrano figuro
         tkinter.Label(self.frame1, text='Izbrana figura:').pack(side = tkinter.LEFT, expand = 1)
@@ -126,6 +123,10 @@ class Gui():
 
         #spreminjanje velikosti polja
         self.frame2.bind('<Configure>', self.spremeni_velikost)
+        self.height = self.plosca.winfo_reqheight()
+        self.width = self.plosca.winfo_reqwidth()
+
+        #spreminjanje velikosti polja
         self.height = self.plosca.winfo_reqheight()
         self.width = self.plosca.winfo_reqwidth()
 
@@ -163,9 +164,6 @@ class Gui():
         self.figura.delete('all')
         (w, h) = (event.width, event.height)
         Gui.VELIKOST_POLJA = min(w / 9, h / 4) - 3
-        #self.VELIKOST_GAP = self.VELIKOST_POLJA / 20
-        #self.frame2.config(width=w - 0.9 * MIN_SIRINA, height=h - 200)
-        #self.frame2.config(width=9*Gui.VELIKOST_POLJA, height=4*Gui.VELIKOST_POLJA)
         self.plosca.config(width=4*Gui.VELIKOST_POLJA,height=4*Gui.VELIKOST_POLJA)
         self.gumbi.config(width=4*Gui.VELIKOST_POLJA,height=4*Gui.VELIKOST_POLJA)
         self.figura.config(width=Gui.VELIKOST_POLJA,height=4*Gui.VELIKOST_POLJA)
@@ -301,8 +299,6 @@ class Gui():
             if diagonala:
                 self.gumbi.create_line(x + Gui.VELIKOST_POLJA/2, y + 5 , x + Gui.VELIKOST_POLJA/2, y + Gui.VELIKOST_POLJA -5 , width=sirina, tag=oznaka)
 
-
-
     def narisi(self, p, figura): #kvadrat
         """Nariši figuro na polje (i, j)."""
         (luknja, proto_barva, diagonala, kvadrat) = figura
@@ -336,8 +332,6 @@ class Gui():
         self.plosca.create_rectangle(tretji[0]*Gui.VELIKOST_POLJA, tretji[1]*Gui.VELIKOST_POLJA, tretji[0]*Gui.VELIKOST_POLJA + Gui.VELIKOST_POLJA, tretji[1]*Gui.VELIKOST_POLJA + Gui.VELIKOST_POLJA, outline = self.barva3, fill=self.barva3, tag=Gui.TAG_ZMAGA)
         self.plosca.create_rectangle(cetrti[0]*Gui.VELIKOST_POLJA, cetrti[1]*Gui.VELIKOST_POLJA, cetrti[0]*Gui.VELIKOST_POLJA + Gui.VELIKOST_POLJA, cetrti[1]*Gui.VELIKOST_POLJA + Gui.VELIKOST_POLJA, outline = self.barva3, fill=self.barva3, tag=Gui.TAG_ZMAGA)
         self.plosca.tag_lower(Gui.TAG_ZMAGA)
-        #self.plosca.create_line(prvi[0] * Gui.VELIKOST_POLJA + 50, prvi[1] * Gui.VELIKOST_POLJA + 50, cetrti[0] * Gui.VELIKOST_POLJA + 50, cetrti[1] * Gui.VELIKOST_POLJA + 50,
-        #                        width=10, fill=self.barva3, tag=Gui.TAG_ZMAGA)
 
     def gumbi_klik(self, event):
         """Obdelaj klik na ploščo."""
