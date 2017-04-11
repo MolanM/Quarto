@@ -3,18 +3,18 @@
 
 from pomozne import *
 
-IGRALEC_1 = "1."
-IGRALEC_2 = "2."
+PRVI_IGRALEC = "prvi"
+DRUGI_IGRALEC = "drugi"
 PRAZNO = "."
 NEODLOCENO = "neodločeno"
 NI_KONEC = "ni konec"
 
 def nasprotnik(igralec):
     """Vrni nasprotnika od igralca."""
-    if igralec == IGRALEC_1:
-        return IGRALEC_2
-    elif igralec == IGRALEC_2:
-        return IGRALEC_1
+    if igralec == PRVI_IGRALEC:
+        return DRUGI_IGRALEC
+    elif igralec == DRUGI_IGRALEC:
+        return PRVI_IGRALEC
     else:
         # Do sem ne smemo priti, če pridemo, je napaka v programu.
         # V ta namen ima Python ukaz assert, s katerim lahko preverimo,
@@ -36,7 +36,7 @@ class Igra():
                       [PRAZNO, PRAZNO, PRAZNO, PRAZNO],
                       [PRAZNO, PRAZNO, PRAZNO, PRAZNO],
                       [PRAZNO, PRAZNO, PRAZNO, PRAZNO]]
-        self.na_potezi = IGRALEC_1
+        self.na_potezi = PRVI_IGRALEC
         self.zgodovina = []
         self.izbrana_figura = None
         self.mozne_figure = []
@@ -99,6 +99,8 @@ class Igra():
         """Povleci potezo p, ne naredi nič, če je neveljavna.
            Vrne stanje_igre() po potezi ali None, ce je poteza neveljavna."""
         (i,j) = p
+        i = int(i)
+        j = int(j)
         if (self.zmagovalec != NI_KONEC) or (self.plosca[i][j] != PRAZNO) or (self.na_potezi == None) or (self.izbrana_figura == None):
             # neveljavna poteza
             return None
@@ -107,16 +109,16 @@ class Igra():
             figura = self.izbrana_figura
             self.plosca[i][j] = figura
             self.izbrana_figura = None
-            (zmagovalec, trojka) = self.stanje_igre()
+            (zmagovalec, cetvorka) = self.stanje_igre()
             if zmagovalec == NI_KONEC:
                 # Igre ni konec, zdaj je na potezi nasprotnik
                 pass
             else:
                 # Igre je konec
                 self.na_potezi = None
-            return (zmagovalec, trojka, figura)
+            return (zmagovalec, cetvorka, figura)
 
-    # Tabela vseh trojk, ki nastopajo v igralnem polju
+    # Tabela vseh cetvork, ki nastopajo v igralnem polju
     cetvorke = [
         # Vodoravne
         [(0,0), (0,1), (0,2), (0,3)],
@@ -136,8 +138,8 @@ class Igra():
 
     def stanje_igre(self):
         """Ugotovi, kakšno je trenutno stanje igre. Vrne:
-           - (IGRALEC_X, trojka), če je igre konec in je zmagal IGRALEC_X z dano zmagovalno trojko
-           - (IGRALEC_O, trojka), če je igre konec in je zmagal IGRALEC_O z dano zmagovalno trojko
+           - (IGRALEC_X, cetvorka), če je igre konec in je zmagal IGRALEC_X z dano zmagovalno cetvorko
+           - (IGRALEC_O, cetvorka), če je igre konec in je zmagal IGRALEC_O z dano zmagovalno cetvorko
            - (NEODLOCENO, None), če je igre konec in je neodločeno
            - (NI_KONEC, None), če igre še ni konec
         """
