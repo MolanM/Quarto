@@ -1,6 +1,7 @@
 import threading  # za vzporedno izvajanje
 import random # za naključen izbor prve poteze
 
+
 from minimax import *
 
 ######################################################################

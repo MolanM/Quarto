@@ -50,6 +50,9 @@ class Gui():
         self.igralec_1 = None # Objekt, ki igra igro kot prvi igralec (nastavimo ob začetku igre)
         self.igralec_2 = None # Objekt, ki igra igro kot drugi igralec (nastavimo ob začetku igre)
         self.igra = None # Objekt, ki predstavlja igro (nastavimo ob začetku igre)
+        self.rezultat = [0,0] #začetni rezltat
+        self.tezavnost = tkinter.IntVar(master, value = globina)
+
 
         # Če uporabnik zapre okno naj se poklice self.zapri_okno
         master.protocol("WM_DELETE_WINDOW", lambda: self.zapri_okno(master))
@@ -58,27 +61,49 @@ class Gui():
         menu = tkinter.Menu(master)
         master.config(menu=menu) # Dodamo glavni menu v okno
 
+
+
         # Nova Igra
         menu_igra = tkinter.Menu(menu, tearoff=0)
         menu.add_cascade(label="Nova igra", menu=menu_igra)
         #menu_igra.add_command(label="Nova igra",
                               #command=lambda: self.zacni_igro())
-        menu_igra.add_command(label="Človek vs. Človek",
+        menu_igra.add_radiobutton(label="Človek vs. Človek",
                               command=lambda: self.zacni_igro(Clovek(self),
                                                               Clovek(self), "Človek vs. Človek", master))
-        menu_igra.add_command(label="Človek vs. Računalnik",
+        menu_igra.add_radiobutton(label="Človek vs. Računalnik",
                               command=lambda: self.zacni_igro(Clovek(self),
-                                                              Racunalnik(self, Minimax(globina)), "Človek vs. Računalnik", master))
-        menu_igra.add_command(label="Računalnik vs. Človek",
-                              command=lambda: self.zacni_igro(Racunalnik(self, Minimax(globina)),
+                                                              Racunalnik(self, Minimax(self.tezavnost.get())), "Človek vs. Računalnik", master))
+        menu_igra.add_radiobutton(label="Računalnik vs. Človek",
+                              command=lambda: self.zacni_igro(Racunalnik(self, Minimax(self.tezavnost.get())),
                                                               Clovek(self), "Računalnik vs. Človek", master))
-        menu_igra.add_command(label="Računalnik vs. Računalnik",
-                              command=lambda: self.zacni_igro(Racunalnik(self, Minimax(globina)),
-                                                              Racunalnik(self, Minimax(globina)), "Računalnik vs. Računalnik", master))
+        menu_igra.add_radiobutton(label="Računalnik vs. Računalnik",
+                              command=lambda: self.zacni_igro(Racunalnik(self, Minimax(self.tezavnost.get())),
+                                                              Racunalnik(self, Minimax(self.tezavnost.get())), "Računalnik vs. Računalnik", master))
 
         helpmenu = tkinter.Menu(menu, tearoff=0)
         helpmenu.add_command(label="Opis in pravila", command=self.opis)
         menu.add_cascade(label="Pomoč", menu=helpmenu)
+
+        #izberi tezavnost
+        tezavnost_menu = tkinter.Menu(menu, tearoff = 0)
+        menu.add_cascade(label = "Izberi težavnost", menu = tezavnost_menu)
+        tezavnost_menu.add_radiobutton(label="Lahko",
+                              variable = self.tezavnost, value = 1)
+        tezavnost_menu.add_radiobutton(label="Srednje",
+                                       variable=self.tezavnost, value=2)
+        #tezavnost_menu.add_radiobutton(label="Srednje",
+        #                           command=lambda: self.spremeni_tezavnost(2))
+        tezavnost_menu.add_radiobutton (label="Težko",
+                                   variable = self.tezavnost, value = 3)
+
+        #resetiraj stevec za zmage
+        resetiraj_menu = tkinter.Menu(menu, tearoff = 0)
+        menu.add_cascade(label = "Resetiraj rezultat", command = self.resetiraj_rezultat)
+
+
+
+
 
         #Frame za napise:
         self.frame1 = tkinter.Frame(master,width=900,height=50,
@@ -97,6 +122,11 @@ class Gui():
         self.naslov = tkinter.Label(self.frame1, textvariable=self.napis, font = "Times 15")
         self.naslov.pack()
 
+        # Napis, ki prikazuje rezultat
+        self.izpis_rezultat = tkinter.StringVar(self.frame1, value="Rezultat: " + str(self.rezultat))
+        self.izpis_rezultata_n = tkinter.Label(self.frame1, textvariable=self.izpis_rezultat, font="Times 15")
+        self.izpis_rezultata_n.pack()
+
         # Igralno območje
         self.plosca = tkinter.Canvas(self.frame2, width=4*Gui.VELIKOST_POLJA, height=4*Gui.VELIKOST_POLJA)
         self.plosca.pack(side = tkinter.LEFT, expand = 1)
@@ -111,6 +141,7 @@ class Gui():
         # Platno za prikaz izbrane figure
         self.figura = tkinter.Canvas(self.frame2, width = Gui.VELIKOST_POLJA, height=Gui.VELIKOST_POLJA*4)
         self.figura.pack(side = tkinter.LEFT, expand = 1)
+
 
         # Gumbi za izbiro figure
         self.gumbi = tkinter.Canvas(self.frame2, width=4*Gui.VELIKOST_POLJA, height=4*Gui.VELIKOST_POLJA)
@@ -137,7 +168,11 @@ class Gui():
         self.gumbi.bind("<Button-1>", self.gumbi_klik)
 
         # Prični igro v načinu človek proti računalniku
-        self.zacni_igro(Clovek(self), Racunalnik(self, Minimax(globina)), "Človek vs. Računalnik", master)
+        self.zacni_igro(Clovek(self), Racunalnik(self, Minimax(self.tezavnost.get())), "Človek vs. Računalnik", master)
+
+    def resetiraj_rezultat(self):
+        self.rezultat = [0,0]
+        self.izpis_rezultat.set("Rezultat: " + str(self.rezultat))
 
     def opis (self):
         win = tkinter.Toplevel()
@@ -150,7 +185,7 @@ class Gui():
         - Ima ali nima simetrale (črta, ki seka lik na pol)
         Igralca se izmenjujeta na potezah - izbirata figuro, ki jo mora naslednji postaviti na ploščo. Igralec zmaga, ko na ploščo postavi figuro, ki dopolonjuje navpično, diagonalno ali horizontalno četverico, katere figure imajo skupno lastost (isto obliko, isto barvo, ...).'''
         about = re.sub("\n\s*", "\n", about) # remove leading whitespace from each line
-        t=tkinter.Text(win, wrap="word", width=100, height=10, borderwidth=0)
+        t=tkinter.Text(win, wrap="word", width=100, height=10, borderwidth=0,background = "gray95")
         t.pack(sid="top",fill="both",expand=True)
         t.insert("1.0", about)
         t.config(state=tkinter.DISABLED)
@@ -208,6 +243,7 @@ class Gui():
         # Nastavimo igralce
         self.igralec_1 = igralec_1
         self.igralec_2 = igralec_2
+
         # Pobrišemo vse figure s polja
         self.plosca.delete(Gui.TAG_FIGURA)
         self.figura.delete(Gui.TAG_FIGURA)
@@ -232,6 +268,12 @@ class Gui():
             self.naslov.config(fg = "red")
             self.napis.set("Zmagal je " + str(self.igra.zmagovalec) + "!")
             self.narisi_zmagovalno_cetvorko(cetverka)
+            if self.igra.zmagovalec == PRVI_IGRALEC:
+                self.rezultat[0] = self.rezultat[0] +1
+                self.izpis_rezultat.set("Rezultat: " + str(self.rezultat))
+            elif self.igra.zmagovalec == DRUGI_IGRALEC:
+                self.rezultat[1] = self.rezultat[1] +1
+                self.izpis_rezultat.set("Rezultat: " + str(self.rezultat))
         else:
             self.napis.set("Neodločeno.")
 
