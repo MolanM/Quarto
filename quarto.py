@@ -1,11 +1,13 @@
 import tkinter    # za uporabniški vmesnik
 import argparse   # za argumente iz ukazne vrstice
 import logging    # za odpravljanje napak
-import random
+import random     #za izbiranje barv v novi igri
 import re # za About okno
 
-MINIMAX_GLOBINA = 2
+MINIMAX_GLOBINA = 1
+# skupine barv - barve so razdeljene v skupine da se ne ponavljajo
 
+# za figure
 zelene = ('midnight blue', 'navy', 'cornflower blue', 'dark slate blue',
     'slate blue', 'medium slate blue', 'light slate blue', 'medium blue', 'royal blue',  'blue',
     'dodger blue', 'deep sky blue', 'sky blue', 'light sky blue', 'steel blue', 'light steel blue',
@@ -15,6 +17,8 @@ zelene = ('midnight blue', 'navy', 'cornflower blue', 'dark slate blue',
     'lawn green', 'medium spring green', 'green yellow', 'lime green', 'yellow green')
 rumene = ('light goldenrod yellow',
     'light yellow', 'yellow', 'gold')
+
+#za označevanje zmagovalne četvorke
 rdece = ('coral', 'light coral', 'tomato', 'orange red', 'red', 'hot pink', 'deep pink', 'pink', 'light pink',
     'pale violet red', 'maroon', 'medium violet red', 'violet red',
     'medium orchid', 'dark orchid', 'dark violet')
@@ -42,6 +46,7 @@ class Gui():
     # Oznaka za zmagovalni okvir
     TAG_ZMAGA = 'zmagovalniokvir'
 
+    #default velikost polja
     VELIKOST_POLJA = 100
 
 
@@ -51,7 +56,7 @@ class Gui():
         self.igralec_2 = None # Objekt, ki igra igro kot drugi igralec (nastavimo ob začetku igre)
         self.igra = None # Objekt, ki predstavlja igro (nastavimo ob začetku igre)
         self.rezultat = [0,0] #začetni rezltat
-        self.tezavnost = tkinter.IntVar(master, value = globina)
+        self.tezavnost = tkinter.IntVar(master, value = 10) #default tezavnost je srednja
 
 
         # Če uporabnik zapre okno naj se poklice self.zapri_okno
@@ -66,39 +71,36 @@ class Gui():
         # Nova Igra
         menu_igra = tkinter.Menu(menu, tearoff=0)
         menu.add_cascade(label="Nova igra", menu=menu_igra)
-        #menu_igra.add_command(label="Nova igra",
-                              #command=lambda: self.zacni_igro())
         menu_igra.add_radiobutton(label="Človek vs. Človek",
                               command=lambda: self.zacni_igro(Clovek(self),
                                                               Clovek(self), "Človek vs. Človek", master))
         menu_igra.add_radiobutton(label="Človek vs. Računalnik",
                               command=lambda: self.zacni_igro(Clovek(self),
-                                                              Racunalnik(self, Minimax(self.tezavnost.get())), "Človek vs. Računalnik", master))
+                                                              Racunalnik(self, Minimax(self.tezavnost.get()),self.tezavnost.get()), "Človek vs. Računalnik", master))
         menu_igra.add_radiobutton(label="Računalnik vs. Človek",
-                              command=lambda: self.zacni_igro(Racunalnik(self, Minimax(self.tezavnost.get())),
+                              command=lambda: self.zacni_igro(Racunalnik(self, Minimax(self.tezavnost.get()),self.tezavnost.get()),
                                                               Clovek(self), "Računalnik vs. Človek", master))
         menu_igra.add_radiobutton(label="Računalnik vs. Računalnik",
-                              command=lambda: self.zacni_igro(Racunalnik(self, Minimax(self.tezavnost.get())),
-                                                              Racunalnik(self, Minimax(self.tezavnost.get())), "Računalnik vs. Računalnik", master))
+                              command=lambda: self.zacni_igro(Racunalnik(self, Minimax(self.tezavnost.get()),self.tezavnost.get()),
+                                                              Racunalnik(self, Minimax(self.tezavnost.get()),self.tezavnost.get()), "Računalnik vs. Računalnik", master))
 
+        #Meni za pomoč
         helpmenu = tkinter.Menu(menu, tearoff=0)
         helpmenu.add_command(label="Opis in pravila", command=self.opis)
+        helpmenu.add_command(label = "O ustvarjalcih", command = self.ustvarjalci)
         menu.add_cascade(label="Pomoč", menu=helpmenu)
 
-        #izberi tezavnost
+        #izberi tezavnost podano v stotinkah sekunde
         tezavnost_menu = tkinter.Menu(menu, tearoff = 0)
         menu.add_cascade(label = "Izberi težavnost", menu = tezavnost_menu)
         tezavnost_menu.add_radiobutton(label="Lahko",
                               variable = self.tezavnost, value = 1)
         tezavnost_menu.add_radiobutton(label="Srednje",
-                                       variable=self.tezavnost, value=2)
-        #tezavnost_menu.add_radiobutton(label="Srednje",
-        #                           command=lambda: self.spremeni_tezavnost(2))
+                                       variable=self.tezavnost, value=10)
         tezavnost_menu.add_radiobutton (label="Težko",
-                                   variable = self.tezavnost, value = 3)
+                                   variable = self.tezavnost, value = 50)
 
         #resetiraj stevec za zmage
-        resetiraj_menu = tkinter.Menu(menu, tearoff = 0)
         menu.add_cascade(label = "Resetiraj rezultat", command = self.resetiraj_rezultat)
 
 
@@ -109,12 +111,10 @@ class Gui():
         self.frame1 = tkinter.Frame(master,width=900,height=50,
                                     relief=tkinter.GROOVE,  borderwidth=5)
         self.frame1.pack(side=tkinter.TOP, anchor=tkinter.NW, fill = tkinter.X)
-        #self.frame1.grid_propagate(0)
 
         #Frame za igro:
         self.frame2 = tkinter.Frame(master, width=8*self.VELIKOST_POLJA, height=7*self.VELIKOST_POLJA,
                                     relief=tkinter.GROOVE, borderwidth=5)
-
         self.frame2.pack(fill=tkinter.BOTH, expand=1, side=tkinter.BOTTOM)
 
         # Napis, ki prikazuje stanje igre
@@ -148,9 +148,6 @@ class Gui():
         self.gumbi.pack(side = tkinter.LEFT, expand = 1)
         tkinter.Label(self.frame1, text='Možne figure:').pack(side = tkinter.LEFT, expand = 1)
 
-        # Črte na igralnem polju
-        #self.narisi_crte()
-        #self.narisi_vse_gumbe()
 
         #spreminjanje velikosti polja
         self.frame2.bind('<Configure>', self.spremeni_velikost)
@@ -168,13 +165,15 @@ class Gui():
         self.gumbi.bind("<Button-1>", self.gumbi_klik)
 
         # Prični igro v načinu človek proti računalniku
-        self.zacni_igro(Clovek(self), Racunalnik(self, Minimax(self.tezavnost.get())), "Človek vs. Računalnik", master)
+        self.zacni_igro(Clovek(self), Racunalnik(self, Minimax(self.tezavnost.get()),self.tezavnost.get()), "Človek vs. Računalnik", master)
 
     def resetiraj_rezultat(self):
+        '''resetira rezultat'''
         self.rezultat = [0,0]
         self.izpis_rezultat.set("Rezultat: " + str(self.rezultat))
 
     def opis (self):
+        '''prikaže opis igre'''
         win = tkinter.Toplevel()
         win.title("About")
         about = '''Quarto je namizna igra za dva igralca. Igra se na plošči s 4x4 polji.
@@ -187,6 +186,19 @@ class Gui():
         about = re.sub("\n\s*", "\n", about) # remove leading whitespace from each line
         t=tkinter.Text(win, wrap="word", width=100, height=10, borderwidth=0,background = "gray95")
         t.pack(sid="top",fill="both",expand=True)
+        t.insert("1.0", about)
+        t.config(state=tkinter.DISABLED)
+        tkinter.Button(win, text='OK', command=win.destroy).pack()
+
+    def ustvarjalci(self):
+        '''prikaže opis ustvarjalcev'''
+        win = tkinter.Toplevel()
+        win.title("Ustvarjalci")
+        about = '''Fake wizards productions je neodvisen umetniški studio, ki deluje v navezavi z performans skupino Ponarajevalci denarja. Ukvarjamo se predvsem s politično dimenzijo umetnosti in znanosti. Igra quarto spada v cikel del o matematiki kot delu postmoderne transcendentalne naracije.
+        Ustanovitelja studia Fake wizards productions sta Nejc Černe in Martin Molan. '''
+        about = re.sub("\n\s*", "\n", about)  # remove leading whitespace from each line
+        t = tkinter.Text(win, wrap="word", width=100, height=10, borderwidth=0, background="gray95")
+        t.pack(sid="top", fill="both", expand=True)
         t.insert("1.0", about)
         t.config(state=tkinter.DISABLED)
         tkinter.Button(win, text='OK', command=win.destroy).pack()
@@ -220,12 +232,6 @@ class Gui():
     def narisi_preostale_gumbe(self):
         self.gumbi.delete(Gui.TAG_OKVIR)
         d = Gui.VELIKOST_POLJA
-        self.gumbi.create_line(1 * d, 0 * d, 1 * d, 4 * d, tag=Gui.TAG_OKVIR)
-        self.gumbi.create_line(2 * d, 0 * d, 2 * d, 4 * d, tag=Gui.TAG_OKVIR)
-        self.gumbi.create_line(3 * d, 0 * d, 3 * d, 4 * d, tag=Gui.TAG_OKVIR)
-        self.gumbi.create_line(0 * d, 1 * d, 4 * d, 1 * d, tag=Gui.TAG_OKVIR)
-        self.gumbi.create_line(0 * d, 2 * d, 4 * d, 2 * d, tag=Gui.TAG_OKVIR)
-        self.gumbi.create_line(0 * d, 3 * d, 4 * d, 3 * d, tag=Gui.TAG_OKVIR)
         for i in range(4):
             for j in range(4):
                 lastnost = binarno(i * 4 + j)
@@ -285,9 +291,6 @@ class Gui():
 
     def zapri_okno(self, master):
         """Ta metoda se pokliče, ko uporabnik zapre aplikacijo."""
-        # Igralcem povemo, da morajo končati (to bo pomembno, ko
-        # bo razmišljal računalnik v vzporednem vlaknu in bo treba vlakno
-        # ustaviti).
         self.prekini_igralce()
         # Dejansko zapremo okno.
         master.destroy()
@@ -304,20 +307,16 @@ class Gui():
         self.plosca.create_line(0*d, 3*d, 4*d, 3*d, tag=Gui.TAG_OKVIR)
 
     def narisi_vse_gumbe(self):
+        '''narisi vse mozne figure'''
         self.gumbi.delete(Gui.TAG_OKVIR)
         d = Gui.VELIKOST_POLJA
-        self.gumbi.create_line(1 * d, 0 * d, 1 * d, 4 * d, tag=Gui.TAG_OKVIR)
-        self.gumbi.create_line(2 * d, 0 * d, 2 * d, 4 * d, tag=Gui.TAG_OKVIR)
-        self.gumbi.create_line(3 * d, 0 * d, 3 * d, 4 * d, tag=Gui.TAG_OKVIR)
-        self.gumbi.create_line(0 * d, 1 * d, 4 * d, 1 * d, tag=Gui.TAG_OKVIR)
-        self.gumbi.create_line(0 * d, 2 * d, 4 * d, 2 * d, tag=Gui.TAG_OKVIR)
-        self.gumbi.create_line(0 * d, 3 * d, 4 * d, 3 * d, tag=Gui.TAG_OKVIR)
         for i in range(4):
             for j in range(4):
                 lastnosti = binarno(i*4 + j)
                 self.narisi_gumbe([i,j], lastnosti)
 
     def narisi_gumbe(self, p, lastnosti):
+        '''narisi gumb s podanimi lastnostmi'''
         (luknja, proto_barva, diagonala, kvadrat) = lastnosti
         if proto_barva:
             barva = self.barva1
@@ -341,7 +340,7 @@ class Gui():
             if diagonala:
                 self.gumbi.create_line(x + Gui.VELIKOST_POLJA/2, y + 5 , x + Gui.VELIKOST_POLJA/2, y + Gui.VELIKOST_POLJA -5 , width=sirina, tag=oznaka)
 
-    def narisi(self, p, figura): #kvadrat
+    def narisi(self, p, figura):
         """Nariši figuro na polje (i, j)."""
         (luknja, proto_barva, diagonala, kvadrat) = figura
         if proto_barva:
@@ -368,6 +367,7 @@ class Gui():
 
 
     def narisi_zmagovalno_cetvorko(self, cetverka):
+        '''označi zmagovalne figure na igralni plošči'''
         (prvi, drugi, tretji, cetrti) = cetverka
         self.plosca.create_rectangle(prvi[0]*Gui.VELIKOST_POLJA, prvi[1]*Gui.VELIKOST_POLJA, prvi[0]*Gui.VELIKOST_POLJA + Gui.VELIKOST_POLJA, prvi[1]*Gui.VELIKOST_POLJA + Gui.VELIKOST_POLJA, outline = self.barva3, fill=self.barva3, tag=Gui.TAG_ZMAGA)
         self.plosca.create_rectangle(drugi[0]*Gui.VELIKOST_POLJA, drugi[1]*Gui.VELIKOST_POLJA, drugi[0]*Gui.VELIKOST_POLJA + Gui.VELIKOST_POLJA, drugi[1]*Gui.VELIKOST_POLJA + Gui.VELIKOST_POLJA, outline = self.barva3, fill=self.barva3, tag=Gui.TAG_ZMAGA)
@@ -376,9 +376,7 @@ class Gui():
         self.plosca.tag_lower(Gui.TAG_ZMAGA)
 
     def gumbi_klik(self, event):
-        """Obdelaj klik na ploščo."""
-        # Tistemu, ki je na potezi, povemo, da je uporabnik kliknil na ploščo.
-        # Podamo mu potezo p.
+        """Obdelaj klik na figure."""
         i = event.x // Gui.VELIKOST_POLJA
         j = event.y // Gui.VELIKOST_POLJA
         if 0 <= i <= 3 and 0 <= j <= 3:
@@ -395,8 +393,6 @@ class Gui():
 
     def plosca_klik(self, event):
         """Obdelaj klik na ploščo."""
-        # Tistemu, ki je na potezi, povemo, da je uporabnik kliknil na ploščo.
-        # Podamo mu potezo p.
         i = event.x // Gui.VELIKOST_POLJA
         j = event.y // Gui.VELIKOST_POLJA
         if 0 <= i <= 3 and 0 <= j <= 3:
@@ -412,10 +408,6 @@ class Gui():
 
     def povleci_potezo(self, p):
         """Povleci potezo p, če je veljavna. Če ni veljavna, ne naredi nič."""
-        # Najprej povlečemo potezo v igri, še pred tem si zapomnimo, kdo jo je povlekel
-        # (ker bo self.igra.povleci_potezo spremenil stanje igre).
-        # GUI se *ne* ukvarja z logiko igre, zato ne preverja, ali je poteza veljavna.
-        # Ta del za njega opravi self.igra.
         igralec = self.igra.na_potezi
         r = self.igra.povleci_potezo(p)
         if r is None:
@@ -439,6 +431,7 @@ class Gui():
                 self.koncaj_igro(zmagovalec, cetverka)
 
     def izberi_figuro(self, lastnosti):
+        '''izberi figuro s podanimi lastnostmi'''
         lastnosti_figure = lastnosti
         tag_lastnosti_figure = naredi_tag(lastnosti)
         if self.igra.izberi_figuro(lastnosti_figure) is None:
@@ -455,6 +448,7 @@ class Gui():
                     self.igralec_2.igraj()
 
     def narisi_gumbe_izbrana_figura(self, lastnosti):
+        '''narisi izbrano figuro'''
         (luknja, proto_barva, diagonala, kvadrat) = lastnosti
         if proto_barva:
             barva = self.barva1
@@ -480,13 +474,6 @@ class Gui():
 
 ######################################################################
 ## Glavni program
-
-# Glavnemu oknu rečemo "root" (koren), ker so grafični elementi
-# organizirani v drevo, glavno okno pa je koren tega drevesa
-
-# Ta pogojni stavek preveri, ali smo datoteko pognali kot glavni program in v tem primeru
-# izvede kodo. (Načeloma bi lahko datoteko naložili z "import" iz kakšne druge in v tem
-# primeru ne bi želeli pognati glavne kode. To je standardni idiom v Pythonu.)
 
 if __name__ == "__main__":
     # Iz ukazne vrstice poberemo argumente, uporabimo
@@ -519,7 +506,7 @@ if __name__ == "__main__":
     # sicer bo Python mislil, da je objekt neuporabljen in ga bo pobrisal
     # iz pomnilnika.
     aplikacija = Gui(root, args.globina)
-    root.minsize(900,450)
+    root.minsize(900,450) #minimalna velikost okna
 
     # Kontrolo prepustimo glavnemu oknu. Funkcija mainloop neha
     # delovati, ko okno zapremo.
