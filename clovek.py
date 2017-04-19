@@ -8,15 +8,11 @@ class Clovek():
         self.gui = gui
 
     def igraj(self):
-        # Smo na potezi. Zaenkrat ne naredimo nič, ampak
-        # čakamo, da bo uporanik kliknil na ploščo. Ko se
-        # bo to zgodilo, nas bo Gui obvestil preko metode
-        # klik.
+        # čakamo, da uporabnik klikne na igralno ploščo ali možne figure
         pass
 
     def prekini(self):
-        # To metodo kliče GUI, če je treba prekiniti razmišljanje.
-        # Človek jo lahko ignorira.
+        # Pri človeku ni treba ničesar prekinjati
         pass
 
     def klik(self, p):

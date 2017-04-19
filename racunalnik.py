@@ -1,16 +1,23 @@
 import threading  # za vzporedno izvajanje
 import random # za naključen izbor prve poteze
+import time
 
 from minimax import *
+from quarto import *
 
 ######################################################################
 ## Igralec računalnik
 
 class Racunalnik():
-    def __init__(self, gui, algoritem):
+
+
+    def __init__(self, gui, algoritem,tezavnost):
         self.gui = gui
         self.algoritem = algoritem # Algoritem, ki izračuna potezo
         self.mislec = None # Vlakno (thread), ki razmišlja
+        self.globina = MINIMAX_GLOBINA
+        self.casovna_omejitev = tezavnost / 100
+        self.globinska_omejitev = 16
 
     def igraj(self):
         """Igraj potezo, ki jo vrne algoritem."""
@@ -32,10 +39,11 @@ class Racunalnik():
             #self.gui.izberi_figuro(self.gui.igra.mozne_figure[0])
         else:
             self.mislec = threading.Thread(
-                target=lambda: self.algoritem.izracunaj_potezo(self.gui.igra.kopija()))
+                target=lambda: self.algoritem.izracunaj_potezo(self.gui.igra.kopija(),self.globina))
 
             # Poženemo vlakno:
             self.mislec.start()
+            self.zacni_meriti_cas = time.time()
 
             # Gremo preverjat, ali je bila najdena poteza:
             self.gui.plosca.after(100, self.preveri_potezo)
@@ -44,11 +52,16 @@ class Racunalnik():
         """Vsakih 100ms preveri, ali je algoritem že izračunal potezo."""
         if (self.algoritem.poteza is not None) and (self.algoritem.figura is not None):
             # Algoritem je našel potezo, povleci jo, če ni bilo prekinitve
-            self.gui.povleci_potezo(self.algoritem.poteza)
-            if self.algoritem.figura != 'konec':
-                self.gui.izberi_figuro(self.algoritem.figura)
-            # Vzporedno vlakno ni več aktivno, zato ga "pozabimo"
-            self.mislec = None
+            self.pretekli_cas = time.time() - self.zacni_meriti_cas
+            if self.pretekli_cas > self.casovna_omejitev or self.globinska_omejitev < self.globina:
+                self.gui.povleci_potezo(self.algoritem.poteza)
+                if self.algoritem.figura != 'konec':
+                    self.gui.izberi_figuro(self.algoritem.figura)
+                # Vzporedno vlakno ni več aktivno, zato ga "pozabimo"
+                self.mislec = None
+            else:
+                self.globina += 1
+                self.igraj()
         else:
             # Algoritem še ni našel poteze, preveri še enkrat čez 100ms
             self.gui.plosca.after(100, self.preveri_potezo)

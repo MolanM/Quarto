@@ -17,17 +17,7 @@ def nasprotnik(igralec):
         return PRVI_IGRALEC
     else:
         # Do sem ne smemo priti, če pridemo, je napaka v programu.
-        # V ta namen ima Python ukaz assert, s katerim lahko preverimo,
-        # ali dani pogoj velja. V našem primeru, ko vemo, da do sem
-        # sploh ne bi smeli priti, napišemo za pogoj False, tako da
-        # bo program crknil, če bo prišel do assert. Spodaj je še nekaj
-        # uporab assert, kjer dejansko preverjamo pogoje, ki bi morali
-        # veljati. To je zelo uporabno za odpravljanje napak.
-        # Assert uporabimo takrat, ko bi program lahko deloval naprej kljub
-        # napaki (če bo itak takoj crknil, potem assert ni potreben).
-        pass
-        #verjetno se stanje igre prevečkrat razveljavi in je potem ni inhče na potezi...
-        #assert False, "neveljaven nasprotnik"
+        assert False, "neveljaven nasprotnik"
 
 
 class Igra():
@@ -44,6 +34,7 @@ class Igra():
         self.zmagovalec = NI_KONEC
 
     def generiraj_figure(self):
+        '''generira vse mozne figure'''
         for i in range(4):
             for j in range(4):
                 lastnosti = binarno(i * 4 + j)
