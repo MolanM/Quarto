@@ -4,6 +4,7 @@ import time
 
 from minimax import *
 from quarto import *
+from igra import *
 
 ######################################################################
 ## Igralec računalnik
@@ -21,16 +22,6 @@ class Racunalnik():
 
     def igraj(self):
         """Igraj potezo, ki jo vrne algoritem."""
-        # Tu sprožimo vzporedno vlakno, ki računa potezo. Ker tkinter ne deluje,
-        # če vzporedno vlakno direktno uporablja tkinter (glej http://effbot.org/zone/tkinter-threads.htm),
-        # zadeve organiziramo takole:
-        # - poženemo vlakno, ki poišče potezo
-        # - to vlakno nekam zapiše potezo, ki jo je našlo
-        # - glavno vlakno, ki sme uporabljati tkinter, vsakih 100ms pogleda, ali
-        #   je že bila najdena poteza (metoda preveri_potezo spodaj).
-        # Ta rešitev je precej amaterska. Z resno knjižnico za GUI bi zadeve lahko
-        # naredili bolje (vlakno bi samo sporočilo GUI-ju, da je treba narediti potezo).
-
         # Naredimo vlakno, ki mu podamo *kopijo* igre (da ne bo zmedel GUIja):
         if self.gui.igra.izbrana_figura == None:
             # Naključen izbor prve igralne figure
@@ -54,12 +45,14 @@ class Racunalnik():
             # Algoritem je našel potezo, povleci jo, če ni bilo prekinitve
             self.pretekli_cas = time.time() - self.zacni_meriti_cas
             if self.pretekli_cas > self.casovna_omejitev or self.globinska_omejitev < self.globina:
+                if len(self.gui.igra.veljavne_poteze()) == 16:
+                    self.globina = MINIMAX_GLOBINA
                 self.gui.povleci_potezo(self.algoritem.poteza)
                 if self.algoritem.figura != 'konec':
                     self.gui.izberi_figuro(self.algoritem.figura)
                 # Vzporedno vlakno ni več aktivno, zato ga "pozabimo"
                 self.mislec = None
-            else:
+            else: #če je potezo izračunal prehitro povečamo globino
                 self.globina += 1
                 self.igraj()
         else:

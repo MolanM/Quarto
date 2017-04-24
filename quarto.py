@@ -3,6 +3,8 @@ import argparse   # za argumente iz ukazne vrstice
 import logging    # za odpravljanje napak
 import random     #za izbiranje barv v novi igri
 import re # za About okno
+from PIL import ImageTk, Image #za sliko ustvarjalcev
+
 
 MINIMAX_GLOBINA = 1
 # skupine barv - barve so razdeljene v skupine da se ne ponavljajo
@@ -197,11 +199,15 @@ class Gui():
         about = '''Fake wizards productions je neodvisen umetniški studio, ki deluje v navezavi z performans skupino Ponarajevalci denarja. Ukvarjamo se predvsem s politično dimenzijo umetnosti in znanosti. Igra quarto spada v cikel del o matematiki kot delu postmoderne transcendentalne naracije.
         Ustanovitelja studia Fake wizards productions sta Nejc Černe in Martin Molan. '''
         about = re.sub("\n\s*", "\n", about)  # remove leading whitespace from each line
+        self.platno = tkinter.Canvas(win,width = 400,height = 400)
+        self.carovnika = tkinter.PhotoImage(file="wizards.gif")
+        self.ids = self.platno.create_image(200, 200, image=self.carovnika)
+        self.platno.pack()
         t = tkinter.Text(win, wrap="word", width=100, height=10, borderwidth=0, background="gray95")
         t.pack(sid="top", fill="both", expand=True)
         t.insert("1.0", about)
         t.config(state=tkinter.DISABLED)
-        tkinter.Button(win, text='OK', command=win.destroy).pack()
+        tkinter.Button(win, text='OK', command=win.destroy).pack(side = "bottom")
 
     def spremeni_velikost(self, event):
         '''Ta funkcija nam prilagaja velikost polja igralnega območja
@@ -220,8 +226,9 @@ class Gui():
             self.narisi_gumbe_izbrana_figura(self.igra.izbrana_figura)
         self.narisi_odigrane_figure()
         if self.igra.na_potezi is None:
-            (zmagovalec, stirka) = self.igra.stanje_igre()
-            self.koncaj_igro(zmagovalec, stirka)
+            (_, stirka) = self.igra.stanje_igre()
+            self.narisi_zmagovalno_cetvorko(stirka)
+
 
     def narisi_odigrane_figure(self):
         for i in range(4):

@@ -77,6 +77,7 @@ class Igra():
         return poteze
 
     def izberi_figuro(self, lastnosti):
+        '''ce je mozno funkcija izbere figuro'''
         figura = self.izbrana_figura
         if (self.zmagovalec != NI_KONEC) or (figura != None) or (lastnosti not in self.mozne_figure) or (self.na_potezi == None):
             return None
@@ -128,12 +129,7 @@ class Igra():
     ]
 
     def stanje_igre(self):
-        """Ugotovi, kakšno je trenutno stanje igre. Vrne:
-           - (IGRALEC_X, cetvorka), če je igre konec in je zmagal IGRALEC_X z dano zmagovalno cetvorko
-           - (IGRALEC_O, cetvorka), če je igre konec in je zmagal IGRALEC_O z dano zmagovalno cetvorko
-           - (NEODLOCENO, None), če je igre konec in je neodločeno
-           - (NI_KONEC, None), če igre še ni konec
-        """
+        '''vrne stanje igre in zmagovalno četvorko (če igra ni neodločena)'''
         for t in Igra.cetvorke:
            for l in range(4):
                 ((i1,j1),(i2,j2),(i3,j3), (i4,j4)) = t
