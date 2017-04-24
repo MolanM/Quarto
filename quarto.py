@@ -2,8 +2,7 @@ import tkinter    # za uporabniški vmesnik
 import argparse   # za argumente iz ukazne vrstice
 import logging    # za odpravljanje napak
 import random     #za izbiranje barv v novi igri
-import re # za About okno
-from PIL import ImageTk, Image #za sliko ustvarjalcev
+import re # za okno za pomoč ter okno o ustvarjalcih
 
 
 MINIMAX_GLOBINA = 1
@@ -177,7 +176,7 @@ class Gui():
     def opis (self):
         '''prikaže opis igre'''
         win = tkinter.Toplevel()
-        win.title("About")
+        win.title("Pravila")
         about = '''Quarto je namizna igra za dva igralca. Igra se na plošči s 4x4 polji.
         Obstaja 16 različnih figur - vsaka ima 4 lastnosti:
         - kvadrat ali krog
@@ -226,8 +225,9 @@ class Gui():
             self.narisi_gumbe_izbrana_figura(self.igra.izbrana_figura)
         self.narisi_odigrane_figure()
         if self.igra.na_potezi is None:
-            (_, stirka) = self.igra.stanje_igre()
-            self.narisi_zmagovalno_cetvorko(stirka)
+            cetverka = self.igra.stanje_igre()[1]
+            if cetverka != None:
+                self.narisi_zmagovalno_cetvorko(cetverka)
 
 
     def narisi_odigrane_figure(self):
