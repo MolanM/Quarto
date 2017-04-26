@@ -14,7 +14,7 @@ def binarno(n):
             seznam_bool.append(False)
         else:
             assert False, 'napaka v seznamu lastnosti'
-    return seznam_bool
+    return tuple(seznam_bool)
 
 def naredi_tag(seznam):
     """Spremeni seznam v nabor, da ga lahko uporabimo za tag figure"""
