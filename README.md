@@ -41,7 +41,7 @@ Igralca se izmenjujeta na potezah - izbirata figuro, ki jo mora naslednji postav
 * Logika igre
 * Igra med dvema človekoma
 * Računalnik kot igralec
-* Testiranje in doprava napak
+* Testiranje in odprava napak
 * Dokumentiranje kode
 * Poliranje GUI
 * Čiščenje kode (imena funkcij, spremenljivk, brisanje nekoristnih delov)
