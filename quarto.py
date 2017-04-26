@@ -2,8 +2,7 @@ import tkinter    # za uporabniški vmesnik
 import argparse   # za argumente iz ukazne vrstice
 import logging    # za odpravljanje napak
 import random     #za izbiranje barv v novi igri
-import re # za About okno
-from PIL import ImageTk, Image #za sliko ustvarjalcev
+import re # za okno za pomoč ter okno o ustvarjalcih
 
 
 MINIMAX_GLOBINA = 1
@@ -177,7 +176,7 @@ class Gui():
     def opis (self):
         '''prikaže opis igre'''
         win = tkinter.Toplevel()
-        win.title("About")
+        win.title("Pravila")
         about = '''Quarto je namizna igra za dva igralca. Igra se na plošči s 4x4 polji.
         Obstaja 16 različnih figur - vsaka ima 4 lastnosti:
         - kvadrat ali krog
@@ -220,30 +219,32 @@ class Gui():
         self.plosca.config(width=4*Gui.VELIKOST_POLJA,height=4*Gui.VELIKOST_POLJA)
         self.gumbi.config(width=4*Gui.VELIKOST_POLJA,height=4*Gui.VELIKOST_POLJA)
         self.figura.config(width=Gui.VELIKOST_POLJA,height=4*Gui.VELIKOST_POLJA)
-        self.narisi_crte()
-        self.narisi_preostale_gumbe()
-        if self.igra.izbrana_figura != None:
-            self.narisi_gumbe_izbrana_figura(self.igra.izbrana_figura)
-        self.narisi_odigrane_figure()
-        if self.igra.na_potezi is None:
-            (_, stirka) = self.igra.stanje_igre()
-            self.narisi_zmagovalno_cetvorko(stirka)
-
+        self.narisi_crte() #na novo narise crte
+        self.narisi_gumbe() #na novo narise mozne figure
+        if self.igra.izbrana_figura != None: #na novo narise izbrano figuro
+            self.narisi(self.igra.izbrana_figura, (0,0), self.figura)
+        self.narisi_odigrane_figure() #na novo narise odigrane figure
+        if self.igra.na_potezi is None: #na novo narise zmagovalno četvorko
+            cetverka = self.igra.stanje_igre()[1]
+            if cetverka != None:
+                self.narisi_zmagovalno_cetvorko(cetverka)
 
     def narisi_odigrane_figure(self):
+        '''narise figure, ki so že bile odigrane'''
         for i in range(4):
             for j in range(4):
                 if self.igra.plosca[i][j] != PRAZNO:
-                    self.narisi((i,j), self.igra.plosca[i][j])
+                    self.narisi(self.igra.plosca[i][j], (i,j), self.plosca)
 
-    def narisi_preostale_gumbe(self):
+    def narisi_gumbe(self):
+        '''narisi vse mozne figure, ki se niso bile odigrane'''
         self.gumbi.delete(Gui.TAG_OKVIR)
         d = Gui.VELIKOST_POLJA
         for i in range(4):
             for j in range(4):
                 lastnost = binarno(i * 4 + j)
-                if lastnost in self.igra.mozne_figure :
-                    self.narisi_gumbe([i, j], lastnost)
+                if lastnost in self.igra.mozne_figure:
+                    self.narisi(lastnost, (i, j), self.gumbi)
 
     def zacni_igro(self, igralec_1, igralec_2, nacin_igre, master):
         """Nastavi stanje igre na zacetek igre.
@@ -256,17 +257,16 @@ class Gui():
         # Nastavimo igralce
         self.igralec_1 = igralec_1
         self.igralec_2 = igralec_2
-
         # Pobrišemo vse figure s polja
         self.plosca.delete(Gui.TAG_FIGURA)
         self.figura.delete(Gui.TAG_FIGURA)
         self.plosca.delete(Gui.TAG_ZMAGA)
         self.gumbi.delete('all')
-        self.narisi_vse_gumbe()
         # Ustvarimo novo igro
         self.igra = Igra()
         self.igra.izbrana_figura = None
         self.igra.zmagovalec = NI_KONEC
+        self.narisi_gumbe()
         # Izpišemo način igre
         IGRA_QUARTO = nacin_igre
         master.title("Igra Quarto: " + nacin_igre)
@@ -292,7 +292,6 @@ class Gui():
             self.napis.set("Neodločeno.")
             self.izpis_rezultat.set("Prvi: " + str(self.rezultat[0]) + " Neodločeno: " + str(self.rezultat[1]) + " Drugi: " + str(self.rezultat[2]))
 
-
     def prekini_igralce(self):
         """Sporoči igralcem, da morajo nehati razmišljati."""
         logging.debug ("prekinjam igralce")
@@ -315,66 +314,6 @@ class Gui():
         self.plosca.create_line(0*d, 1*d, 4*d, 1*d, tag=Gui.TAG_OKVIR)
         self.plosca.create_line(0*d, 2*d, 4*d, 2*d, tag=Gui.TAG_OKVIR)
         self.plosca.create_line(0*d, 3*d, 4*d, 3*d, tag=Gui.TAG_OKVIR)
-
-    def narisi_vse_gumbe(self):
-        '''narisi vse mozne figure'''
-        self.gumbi.delete(Gui.TAG_OKVIR)
-        d = Gui.VELIKOST_POLJA
-        for i in range(4):
-            for j in range(4):
-                lastnosti = binarno(i*4 + j)
-                self.narisi_gumbe([i,j], lastnosti)
-
-    def narisi_gumbe(self, p, lastnosti):
-        '''narisi gumb s podanimi lastnostmi'''
-        (luknja, proto_barva, diagonala, kvadrat) = lastnosti
-        if proto_barva:
-            barva = self.barva1
-        else:
-            barva = self.barva2
-        x = p[0] * Gui.VELIKOST_POLJA
-        y = p[1] * Gui.VELIKOST_POLJA
-        sirina = 3
-        oznaka = naredi_tag(lastnosti)
-        if kvadrat:
-            self.gumbi.create_rectangle(x + 5, y + 5, x + (Gui.VELIKOST_POLJA-5), y + (Gui.VELIKOST_POLJA-5), width=sirina, fill=barva, tag=oznaka)
-            if luknja:
-                self.gumbi.create_oval(x + (Gui.VELIKOST_POLJA/3), y + (Gui.VELIKOST_POLJA/3), x + (Gui.VELIKOST_POLJA/3)*2, y + (Gui.VELIKOST_POLJA/3)*2, width=sirina, tag=oznaka)
-            if diagonala:
-                self.gumbi.create_line(x + Gui.VELIKOST_POLJA / 2, y + 5, x + Gui.VELIKOST_POLJA / 2,
-                                       y + Gui.VELIKOST_POLJA - 5, width=sirina, tag=oznaka)
-        else:
-            self.gumbi.create_oval(x + 5, y + 5, x + (Gui.VELIKOST_POLJA-5), y + (Gui.VELIKOST_POLJA-5), width=sirina, fill=barva, tag=oznaka)
-            if luknja:
-                self.gumbi.create_oval(x + (Gui.VELIKOST_POLJA/3), y + (Gui.VELIKOST_POLJA/3), x + (Gui.VELIKOST_POLJA/3)*2, y + (Gui.VELIKOST_POLJA/3)*2, width=sirina, tag=oznaka)
-            if diagonala:
-                self.gumbi.create_line(x + Gui.VELIKOST_POLJA/2, y + 5 , x + Gui.VELIKOST_POLJA/2, y + Gui.VELIKOST_POLJA -5 , width=sirina, tag=oznaka)
-
-    def narisi(self, p, figura):
-        """Nariši figuro na polje (i, j)."""
-        (luknja, proto_barva, diagonala, kvadrat) = figura
-        if proto_barva:
-            barva = self.barva1
-        else:
-            barva = self.barva2
-        x = p[0] * Gui.VELIKOST_POLJA
-        y = p[1] * Gui.VELIKOST_POLJA
-        sirina = 3
-        if kvadrat:
-            self.plosca.create_rectangle(x + 5, y + 5, x + (Gui.VELIKOST_POLJA-5), y + (Gui.VELIKOST_POLJA-5), width=sirina, fill=barva, tag=Gui.TAG_FIGURA)
-            if luknja:
-                self.plosca.create_oval(x + (Gui.VELIKOST_POLJA/3), y + (Gui.VELIKOST_POLJA/3), x + (Gui.VELIKOST_POLJA/3)*2, y + (Gui.VELIKOST_POLJA/3)*2, width=sirina, tag=Gui.TAG_FIGURA)
-            if diagonala:
-                self.plosca.create_line(x + Gui.VELIKOST_POLJA / 2, y + 5, x + Gui.VELIKOST_POLJA / 2,
-                                        y + Gui.VELIKOST_POLJA - 5, width=sirina, tag=Gui.TAG_FIGURA)
-        else:
-            self.plosca.create_oval(x + 5, y + 5, x + (Gui.VELIKOST_POLJA-5), y + (Gui.VELIKOST_POLJA-5), width=sirina, fill=barva, tag=Gui.TAG_FIGURA)
-            if luknja:
-                self.plosca.create_oval(x + (Gui.VELIKOST_POLJA/3), y + (Gui.VELIKOST_POLJA/3), x + (Gui.VELIKOST_POLJA/3)*2, y + (Gui.VELIKOST_POLJA/3)*2, width=sirina, tag=Gui.TAG_FIGURA)
-            if diagonala:
-                self.plosca.create_line(x + Gui.VELIKOST_POLJA / 2, y + 5, x + Gui.VELIKOST_POLJA / 2,
-                                       y + Gui.VELIKOST_POLJA - 5, width=sirina, tag=Gui.TAG_FIGURA)
-
 
     def narisi_zmagovalno_cetvorko(self, cetverka):
         '''označi zmagovalne figure na igralni plošči'''
@@ -427,7 +366,7 @@ class Gui():
             # Poteza je bila veljavna, narišemo jo na zaslon
             # Ugotovimo, kako nadaljevati
             (zmagovalec, cetverka, figura) = r
-            self.narisi(p, figura)
+            self.narisi(figura, p, self.plosca)
             self.figura.delete(Gui.TAG_FIGURA)
             if igralec == PRVI_IGRALEC:
                     self.napis.set("Na potezi je " + PRVI_IGRALEC + ", da izbere figuro.")
@@ -449,7 +388,7 @@ class Gui():
         else:
             self.figura.delete(Gui.TAG_FIGURA)
             self.gumbi.delete(tag_lastnosti_figure)
-            self.narisi_gumbe_izbrana_figura(lastnosti_figure)
+            self.narisi(lastnosti_figure, (0,0), self.figura)
             if self.igra.na_potezi == PRVI_IGRALEC:
                     self.napis.set("Na potezi je " + PRVI_IGRALEC + ", da položi izbrano figuro na igralno ploščo.")
                     self.igralec_1.igraj()
@@ -457,30 +396,40 @@ class Gui():
                     self.napis.set("Na potezi je " + DRUGI_IGRALEC + ", da položi izbrano figuro na igralno ploščo.")
                     self.igralec_2.igraj()
 
-    def narisi_gumbe_izbrana_figura(self, lastnosti):
-        '''narisi izbrano figuro'''
+    def narisi(self, lastnosti, p, lokacija):
+        """Nariši figuro, gumb ali izbrano figuro (podana lokacija) s podanimi lastnostmi."""
         (luknja, proto_barva, diagonala, kvadrat) = lastnosti
+        if lokacija == self.gumbi:
+            oznaka = naredi_tag(lastnosti)
+        else: #self.figura in self.plosca
+            oznaka = Gui.TAG_FIGURA
         if proto_barva:
             barva = self.barva1
         else:
             barva = self.barva2
+        x = p[0] * Gui.VELIKOST_POLJA
+        y = p[1] * Gui.VELIKOST_POLJA
         sirina = 3
         if kvadrat:
-            self.figura.create_rectangle(5, 5,(Gui.VELIKOST_POLJA-5), (Gui.VELIKOST_POLJA-5), width=sirina, fill=barva, tag=Gui.TAG_FIGURA)
+            lokacija.create_rectangle(x + 5, y + 5, x + (Gui.VELIKOST_POLJA - 5),
+                                      y + (Gui.VELIKOST_POLJA - 5), width=sirina, fill=barva, tag=oznaka)
             if luknja:
-                self.figura.create_oval((Gui.VELIKOST_POLJA/3), (Gui.VELIKOST_POLJA/3), (Gui.VELIKOST_POLJA/3)*2, (Gui.VELIKOST_POLJA/3)*2, width=sirina, tag=Gui.TAG_FIGURA)
+                lokacija.create_oval(x + (Gui.VELIKOST_POLJA / 3), y + (Gui.VELIKOST_POLJA / 3),
+                                     x + (Gui.VELIKOST_POLJA / 3) * 2, y + (Gui.VELIKOST_POLJA / 3) * 2,
+                                     width=sirina, tag=oznaka)
             if diagonala:
-                self.figura.create_line(Gui.VELIKOST_POLJA / 2, 5, Gui.VELIKOST_POLJA / 2,
-                                        Gui.VELIKOST_POLJA - 5, width=sirina, tag=Gui.TAG_FIGURA)
+                lokacija.create_line(x + Gui.VELIKOST_POLJA / 2, y + 5, x + Gui.VELIKOST_POLJA / 2,
+                                     y + Gui.VELIKOST_POLJA - 5, width=sirina, tag=oznaka)
         else:
-            self.figura.create_oval(5, 5, (Gui.VELIKOST_POLJA-5),(Gui.VELIKOST_POLJA-5), width=sirina, fill=barva, tag=Gui.TAG_FIGURA)
+            lokacija.create_oval(x + 5, y + 5, x + (Gui.VELIKOST_POLJA - 5), y + (Gui.VELIKOST_POLJA - 5),
+                                 width=sirina, fill=barva, tag=oznaka)
             if luknja:
-                self.figura.create_oval((Gui.VELIKOST_POLJA/3),(Gui.VELIKOST_POLJA/3), (Gui.VELIKOST_POLJA/3)*2,(Gui.VELIKOST_POLJA/3)*2, width=sirina, tag=Gui.TAG_FIGURA)
+                lokacija.create_oval(x + (Gui.VELIKOST_POLJA / 3), y + (Gui.VELIKOST_POLJA / 3),
+                                     x + (Gui.VELIKOST_POLJA / 3) * 2, y + (Gui.VELIKOST_POLJA / 3) * 2,
+                                     width=sirina, tag=oznaka)
             if diagonala:
-                self.figura.create_line(Gui.VELIKOST_POLJA / 2, 5, Gui.VELIKOST_POLJA / 2,
-                                       Gui.VELIKOST_POLJA - 5, width=sirina, tag=Gui.TAG_FIGURA)
-
-
+                lokacija.create_line(x + Gui.VELIKOST_POLJA / 2, y + 5, x + Gui.VELIKOST_POLJA / 2,
+                                     y + Gui.VELIKOST_POLJA - 5, width=sirina, tag=oznaka)
 
 ######################################################################
 ## Glavni program

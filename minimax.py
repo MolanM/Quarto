@@ -22,7 +22,7 @@ class Minimax:
            je uporabnik zaprl okno ali izbral novo igro."""
         self.prekinitev = True
 
-    def izracunaj_potezo(self, igra,globina):
+    def izracunaj_potezo(self, igra, globina):
         """Izračunaj potezo za trenutno stanje dane igre."""
         self.globina = globina
         # To metodo pokličemo iz vzporednega vlakna
