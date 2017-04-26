@@ -85,12 +85,6 @@ class Gui():
                               command=lambda: self.zacni_igro(Racunalnik(self, Minimax(self.tezavnost.get()),self.tezavnost.get()),
                                                               Racunalnik(self, Minimax(self.tezavnost.get()),self.tezavnost.get()), "Računalnik vs. Računalnik", master))
 
-        #Meni za pomoč
-        helpmenu = tkinter.Menu(menu, tearoff=0)
-        helpmenu.add_command(label="Opis in pravila", command=self.opis)
-        helpmenu.add_command(label = "O ustvarjalcih", command = self.ustvarjalci)
-        menu.add_cascade(label="Pomoč", menu=helpmenu)
-
         #izberi tezavnost podano v stotinkah sekunde
         tezavnost_menu = tkinter.Menu(menu, tearoff = 0)
         menu.add_cascade(label = "Izberi težavnost", menu = tezavnost_menu)
@@ -104,7 +98,11 @@ class Gui():
         #resetiraj stevec za zmage
         menu.add_cascade(label = "Resetiraj rezultat", command = self.resetiraj_rezultat)
 
-
+        #Meni za pomoč
+        helpmenu = tkinter.Menu(menu, tearoff=0)
+        helpmenu.add_command(label="Opis in pravila", command=self.opis)
+        helpmenu.add_command(label = "O ustvarjalcih", command = self.ustvarjalci)
+        menu.add_cascade(label="Pomoč", menu=helpmenu)
 
 
 

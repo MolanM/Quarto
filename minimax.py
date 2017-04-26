@@ -128,7 +128,7 @@ class Minimax:
         return vrednost
 
     def minimax(self, globina, maksimiziramo, alfa, beta):
-        """Glavna metoda minimax."""
+        """Glavna metoda minimax z implementiranimi alfa beta rezi"""
         if self.prekinitev:
             # Sporočili so nam, da moramo prekiniti
             logging.debug ("Minimax prekinja, globina = {0}".format(globina))
