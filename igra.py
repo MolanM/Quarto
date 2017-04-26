@@ -17,17 +17,7 @@ def nasprotnik(igralec):
         return PRVI_IGRALEC
     else:
         # Do sem ne smemo priti, če pridemo, je napaka v programu.
-        # V ta namen ima Python ukaz assert, s katerim lahko preverimo,
-        # ali dani pogoj velja. V našem primeru, ko vemo, da do sem
-        # sploh ne bi smeli priti, napišemo za pogoj False, tako da
-        # bo program crknil, če bo prišel do assert. Spodaj je še nekaj
-        # uporab assert, kjer dejansko preverjamo pogoje, ki bi morali
-        # veljati. To je zelo uporabno za odpravljanje napak.
-        # Assert uporabimo takrat, ko bi program lahko deloval naprej kljub
-        # napaki (če bo itak takoj crknil, potem assert ni potreben).
-        pass
-        #verjetno se stanje igre prevečkrat razveljavi in je potem ni inhče na potezi...
-        #assert False, "neveljaven nasprotnik"
+        assert False, "neveljaven nasprotnik"
 
 
 class Igra():
@@ -44,6 +34,7 @@ class Igra():
         self.zmagovalec = NI_KONEC
 
     def generiraj_figure(self):
+        '''generira vse mozne figure'''
         for i in range(4):
             for j in range(4):
                 lastnosti = binarno(i * 4 + j)
@@ -86,6 +77,7 @@ class Igra():
         return poteze
 
     def izberi_figuro(self, lastnosti):
+        '''ce je mozno funkcija izbere figuro'''
         figura = self.izbrana_figura
         if (self.zmagovalec != NI_KONEC) or (figura != None) or (lastnosti not in self.mozne_figure) or (self.na_potezi == None):
             return None
@@ -99,6 +91,8 @@ class Igra():
         """Povleci potezo p, ne naredi nič, če je neveljavna.
            Vrne stanje_igre() po potezi ali None, ce je poteza neveljavna."""
         (i,j) = p
+        i = int(i)
+        j = int(j)
         if (self.zmagovalec != NI_KONEC) or (self.plosca[i][j] != PRAZNO) or (self.na_potezi == None) or (self.izbrana_figura == None):
             # neveljavna poteza
             return None
@@ -135,12 +129,7 @@ class Igra():
     ]
 
     def stanje_igre(self):
-        """Ugotovi, kakšno je trenutno stanje igre. Vrne:
-           - (IGRALEC_X, cetvorka), če je igre konec in je zmagal IGRALEC_X z dano zmagovalno cetvorko
-           - (IGRALEC_O, cetvorka), če je igre konec in je zmagal IGRALEC_O z dano zmagovalno cetvorko
-           - (NEODLOCENO, None), če je igre konec in je neodločeno
-           - (NI_KONEC, None), če igre še ni konec
-        """
+        '''vrne stanje igre in zmagovalno četvorko (če igra ni neodločena)'''
         for t in Igra.cetvorke:
            for l in range(4):
                 ((i1,j1),(i2,j2),(i3,j3), (i4,j4)) = t

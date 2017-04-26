@@ -20,13 +20,12 @@ Igra je ločena v šest datotek:
 [Hiter opis igre v angleščini](https://en.wikipedia.org/wiki/Quarto_(board_game))
 
 Quarto je namizna igra za dva igralca. Igra se na plošči s 4x4 polji. Obstaja 16 različnih figur - vsaka ima 4 lastnosti:
-* Kvadrat ali krog
-* Rumena ali zelena
-* Ima ali nima luknje (krogec v sredini)
-* Ima ali nima diagonale
+* kvadrat ali krog
+* rumena/oranžna ali zelena/modra
+* ima ali nima luknje (krogec v sredini)
+* ima ali nima simetrale (črta, ki seka lik na pol)
 
 Igralca se izmenjujeta na potezah - izbirata figuro, ki jo mora naslednji postaviti na ploščo. Igralec zmaga, ko na ploščo postavi figuro, ki dopolonjuje navpično, diagonalno ali horizontalno četverico, katere figure imajo skupno lastost (isto obliko, isto barvo, ...).
-
 
 ## Plan dela:
 * Izbor igre
@@ -42,7 +41,7 @@ Igralca se izmenjujeta na potezah - izbirata figuro, ki jo mora naslednji postav
 * Logika igre
 * Igra med dvema človekoma
 * Računalnik kot igralec
-* Testiranje in doprava napak
+* Testiranje in odprava napak
 * Dokumentiranje kode
 * Poliranje GUI
 * Čiščenje kode (imena funkcij, spremenljivk, brisanje nekoristnih delov)
