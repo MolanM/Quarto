@@ -2,7 +2,7 @@ import threading  # za vzporedno izvajanje
 import random # za naključen izbor prve poteze
 import time
 
-from minimax import *
+from minimaxAB import *
 from quarto import *
 from igra import *
 
@@ -16,7 +16,7 @@ class Racunalnik():
         self.gui = gui
         self.algoritem = algoritem # Algoritem, ki izračuna potezo
         self.mislec = None # Vlakno (thread), ki razmišlja
-        self.globina = MINIMAX_GLOBINA
+        self.globina = MINIMAXAB_GLOBINA
         self.casovna_omejitev = tezavnost / 100
         self.globinska_omejitev = 16
 
@@ -44,9 +44,9 @@ class Racunalnik():
         if (self.algoritem.poteza is not None) and (self.algoritem.figura is not None):
             # Algoritem je našel potezo, povleci jo, če ni bilo prekinitve
             self.pretekli_cas = time.time() - self.zacni_meriti_cas
-            if self.pretekli_cas > self.casovna_omejitev or self.globinska_omejitev < self.globina:
+            if self.pretekli_cas > self.casovna_omejitev or self.globinska_omejitev <= self.globina:
                 if len(self.gui.igra.veljavne_poteze()) == 16:
-                    self.globina = MINIMAX_GLOBINA
+                    self.globina = MINIMAXAB_GLOBINA
                 self.gui.povleci_potezo(self.algoritem.poteza)
                 if self.algoritem.figura != 'konec':
                     self.gui.izberi_figuro(self.algoritem.figura)

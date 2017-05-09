@@ -5,7 +5,8 @@ import random     #za izbiranje barv v novi igri
 import re # za okno za pomoč ter okno o ustvarjalcih
 
 
-MINIMAX_GLOBINA = 1
+MINIMAXAB_GLOBINA = 1
+TEZAVNOST = 20 #težavnost v stotinkah sekunde (vsaj toliko časa bo iskal dobre poteze)
 # skupine barv - barve so razdeljene v skupine da se ne ponavljajo
 
 # za figure
@@ -30,7 +31,7 @@ IGRA_QUARTO = ""
 from igra import *
 from clovek import *
 from pomozne import *
-from minimax import *
+from minimaxAB import *
 from racunalnik import *
 ######################################################################
 
@@ -51,14 +52,13 @@ class Gui():
     VELIKOST_POLJA = 100
 
 
-    def __init__(self, master, globina):
+    def __init__(self, master, tezavnost):
 
         self.igralec_1 = None # Objekt, ki igra igro kot prvi igralec (nastavimo ob začetku igre)
         self.igralec_2 = None # Objekt, ki igra igro kot drugi igralec (nastavimo ob začetku igre)
         self.igra = None # Objekt, ki predstavlja igro (nastavimo ob začetku igre)
         self.rezultat = [0,0,0] #začetni rezltat
-        self.tezavnost = tkinter.IntVar(master, value = 10) #default tezavnost je srednja
-
+        self.tezavnost = tkinter.IntVar(master, value = tezavnost) #default tezavnost je srednja
 
         # Če uporabnik zapre okno naj se poklice self.zapri_okno
         master.protocol("WM_DELETE_WINDOW", lambda: self.zapri_okno(master))
@@ -66,8 +66,6 @@ class Gui():
         # Glavni menu
         menu = tkinter.Menu(master)
         master.config(menu=menu) # Dodamo glavni menu v okno
-
-
 
         # Nova Igra
         menu_igra = tkinter.Menu(menu, tearoff=0)
@@ -77,21 +75,20 @@ class Gui():
                                                               Clovek(self), "Človek vs. Človek", master))
         menu_igra.add_radiobutton(label="Človek vs. Računalnik",
                               command=lambda: self.zacni_igro(Clovek(self),
-                                                              Racunalnik(self, Minimax(self.tezavnost.get()),self.tezavnost.get()), "Človek vs. Računalnik", master))
+                                                              Racunalnik(self, MinimaxAB(self.tezavnost.get()),self.tezavnost.get()), "Človek vs. Računalnik", master))
         menu_igra.add_radiobutton(label="Računalnik vs. Človek",
-                              command=lambda: self.zacni_igro(Racunalnik(self, Minimax(self.tezavnost.get()),self.tezavnost.get()),
+                              command=lambda: self.zacni_igro(Racunalnik(self, MinimaxAB(self.tezavnost.get()),self.tezavnost.get()),
                                                               Clovek(self), "Računalnik vs. Človek", master))
         menu_igra.add_radiobutton(label="Računalnik vs. Računalnik",
-                              command=lambda: self.zacni_igro(Racunalnik(self, Minimax(self.tezavnost.get()),self.tezavnost.get()),
-                                                              Racunalnik(self, Minimax(self.tezavnost.get()),self.tezavnost.get()), "Računalnik vs. Računalnik", master))
-
+                              command=lambda: self.zacni_igro(Racunalnik(self, MinimaxAB(self.tezavnost.get()),self.tezavnost.get()),
+                                                              Racunalnik(self, MinimaxAB(self.tezavnost.get()),self.tezavnost.get()), "Računalnik vs. Računalnik", master))
         #izberi tezavnost podano v stotinkah sekunde
         tezavnost_menu = tkinter.Menu(menu, tearoff = 0)
         menu.add_cascade(label = "Izberi težavnost", menu = tezavnost_menu)
         tezavnost_menu.add_radiobutton(label="Lahko",
                               variable = self.tezavnost, value = 1)
         tezavnost_menu.add_radiobutton(label="Srednje",
-                                       variable=self.tezavnost, value=10)
+                                       variable=self.tezavnost, value=20)
         tezavnost_menu.add_radiobutton (label="Težko",
                                    variable = self.tezavnost, value = 50)
 
@@ -103,8 +100,6 @@ class Gui():
         helpmenu.add_command(label="Opis in pravila", command=self.opis)
         helpmenu.add_command(label = "O ustvarjalcih", command = self.ustvarjalci)
         menu.add_cascade(label="Pomoč", menu=helpmenu)
-
-
 
         #Frame za napise:
         self.frame1 = tkinter.Frame(master,width=900,height=50,
@@ -133,7 +128,6 @@ class Gui():
         # Napis nad izbrano igralno ploščo
         tkinter.Label(self.frame1, text='Igralna plošča:').pack(side = tkinter.LEFT, expand = 1)
 
-
         # Napis nad izbrano figuro
         tkinter.Label(self.frame1, text='Izbrana figura:').pack(side = tkinter.LEFT, expand = 1)
 
@@ -141,17 +135,13 @@ class Gui():
         self.figura = tkinter.Canvas(self.frame2, width = Gui.VELIKOST_POLJA, height=Gui.VELIKOST_POLJA*4)
         self.figura.pack(side = tkinter.LEFT, expand = 1)
 
-
         # Gumbi za izbiro figure
-        self.gumbi = tkinter.Canvas(self.frame2, width=4*Gui.VELIKOST_POLJA, height=4*Gui.VELIKOST_POLJA)
-        self.gumbi.pack(side = tkinter.LEFT, expand = 1)
+        self.mozne_figure = tkinter.Canvas(self.frame2, width=4*Gui.VELIKOST_POLJA, height=4*Gui.VELIKOST_POLJA)
+        self.mozne_figure.pack(side = tkinter.LEFT, expand = 1)
         tkinter.Label(self.frame1, text='Možne figure:').pack(side = tkinter.LEFT, expand = 1)
-
 
         #spreminjanje velikosti polja
         self.frame2.bind('<Configure>', self.spremeni_velikost)
-        self.height = self.plosca.winfo_reqheight()
-        self.width = self.plosca.winfo_reqwidth()
 
         #spreminjanje velikosti polja
         self.height = self.plosca.winfo_reqheight()
@@ -160,11 +150,11 @@ class Gui():
         # Naročimo se na dogodek Button-1 na self.plosca,
         self.plosca.bind("<Button-1>", self.plosca_klik)
 
-        # Naročimo se na dogodek Button-1 na self.gumbi,
-        self.gumbi.bind("<Button-1>", self.gumbi_klik)
+        # Naročimo se na dogodek Button-1 na self.mozne_figure,
+        self.mozne_figure.bind("<Button-1>", self.mozne_figure_klik)
 
         # Prični igro v načinu človek proti računalniku
-        self.zacni_igro(Clovek(self), Racunalnik(self, Minimax(self.tezavnost.get()),self.tezavnost.get()), "Človek vs. Računalnik", master)
+        self.zacni_igro(Clovek(self), Racunalnik(self, MinimaxAB(self.tezavnost.get()),self.tezavnost.get()), "Človek vs. Računalnik", master)
 
     def resetiraj_rezultat(self):
         '''resetira rezultat'''
@@ -210,19 +200,19 @@ class Gui():
         '''Ta funkcija nam prilagaja velikost polja igralnega območja
             glede na velikost celotnega okna.'''
         self.plosca.delete('all')
-        self.gumbi.delete('all')
+        self.mozne_figure.delete('all')
         self.figura.delete('all')
         (w, h) = (event.width, event.height)
         Gui.VELIKOST_POLJA = min(w / 9, h / 4) - 3
         self.plosca.config(width=4*Gui.VELIKOST_POLJA,height=4*Gui.VELIKOST_POLJA)
-        self.gumbi.config(width=4*Gui.VELIKOST_POLJA,height=4*Gui.VELIKOST_POLJA)
+        self.mozne_figure.config(width=4*Gui.VELIKOST_POLJA,height=4*Gui.VELIKOST_POLJA)
         self.figura.config(width=Gui.VELIKOST_POLJA,height=4*Gui.VELIKOST_POLJA)
         self.narisi_crte() #na novo narise crte
-        self.narisi_gumbe() #na novo narise mozne figure
+        self.narisi_mozne_figure() #na novo narise mozne figure
         if self.igra.izbrana_figura != None: #na novo narise izbrano figuro
-            self.narisi(self.igra.izbrana_figura, (0,0), self.figura)
+            self.narisi_figuro(self.igra.izbrana_figura, (0,0), self.figura)
         self.narisi_odigrane_figure() #na novo narise odigrane figure
-        if self.igra.na_potezi is None: #na novo narise zmagovalno četvorko
+        if self.igra.trajanje == KONEC: #na novo narise zmagovalno četvorko
             cetverka = self.igra.stanje_igre()[1]
             if cetverka != None:
                 self.narisi_zmagovalno_cetvorko(cetverka)
@@ -232,25 +222,25 @@ class Gui():
         for i in range(4):
             for j in range(4):
                 if self.igra.plosca[i][j] != PRAZNO:
-                    self.narisi(self.igra.plosca[i][j], (i,j), self.plosca)
+                    self.narisi_figuro(self.igra.plosca[i][j], (i,j), self.plosca)
 
-    def narisi_gumbe(self):
+    def narisi_mozne_figure(self):
         '''narisi vse mozne figure, ki se niso bile odigrane'''
-        self.gumbi.delete(Gui.TAG_OKVIR)
+        self.mozne_figure.delete(Gui.TAG_OKVIR)
         d = Gui.VELIKOST_POLJA
         for i in range(4):
             for j in range(4):
                 lastnost = binarno(i * 4 + j)
                 if lastnost in self.igra.mozne_figure:
-                    self.narisi(lastnost, (i, j), self.gumbi)
+                    self.narisi_figuro(lastnost, (i, j), self.mozne_figure)
 
     def zacni_igro(self, igralec_1, igralec_2, nacin_igre, master):
         """Nastavi stanje igre na zacetek igre.
            Za igralca uporabi dana igralca."""
         # Ustavimo vse igralce (ki morda razmišljajo)
-        self.barva1 = random.choice(zelene)
-        self.barva2 = random.choice(rumene)
-        self.barva3 = random.choice(rdece)
+        self.barva_zelene = random.choice(zelene)
+        self.barva_rumene = random.choice(rumene)
+        self.barva_zmaga = random.choice(rdece)
         self.prekini_igralce()
         # Nastavimo igralce
         self.igralec_1 = igralec_1
@@ -259,12 +249,10 @@ class Gui():
         self.plosca.delete(Gui.TAG_FIGURA)
         self.figura.delete(Gui.TAG_FIGURA)
         self.plosca.delete(Gui.TAG_ZMAGA)
-        self.gumbi.delete('all')
+        self.mozne_figure.delete('all')
         # Ustvarimo novo igro
         self.igra = Igra()
-        self.igra.izbrana_figura = None
-        self.igra.zmagovalec = NI_KONEC
-        self.narisi_gumbe()
+        self.narisi_mozne_figure()
         # Izpišemo način igre
         IGRA_QUARTO = nacin_igre
         master.title("Igra Quarto: " + nacin_igre)
@@ -277,12 +265,12 @@ class Gui():
         """Nastavi stanje igre na konec igre."""
         if zmagovalec != NEODLOCENO:
             self.naslov.config(fg = "red")
-            self.napis.set("Zmagal je " + str(self.igra.zmagovalec) + "!")
+            self.napis.set("Zmagal je " + str(zmagovalec) + "!")
             self.narisi_zmagovalno_cetvorko(cetverka)
-            if self.igra.zmagovalec == PRVI_IGRALEC:
+            if zmagovalec == PRVI_IGRALEC:
                 self.rezultat[0] += 1
                 self.izpis_rezultat.set("Prvi: " + str(self.rezultat[0]) + " Neodločeno: " + str(self.rezultat[1]) + " Drugi: " + str(self.rezultat[2]))
-            elif self.igra.zmagovalec == DRUGI_IGRALEC:
+            elif zmagovalec == DRUGI_IGRALEC:
                 self.rezultat[2] += 1
                 self.izpis_rezultat.set("Prvi: " + str(self.rezultat[0]) + " Neodločeno: " + str(self.rezultat[1]) + " Drugi: " + str(self.rezultat[2]))
         else:
@@ -316,13 +304,13 @@ class Gui():
     def narisi_zmagovalno_cetvorko(self, cetverka):
         '''označi zmagovalne figure na igralni plošči'''
         (prvi, drugi, tretji, cetrti) = cetverka
-        self.plosca.create_rectangle(prvi[0]*Gui.VELIKOST_POLJA, prvi[1]*Gui.VELIKOST_POLJA, prvi[0]*Gui.VELIKOST_POLJA + Gui.VELIKOST_POLJA, prvi[1]*Gui.VELIKOST_POLJA + Gui.VELIKOST_POLJA, outline = self.barva3, fill=self.barva3, tag=Gui.TAG_ZMAGA)
-        self.plosca.create_rectangle(drugi[0]*Gui.VELIKOST_POLJA, drugi[1]*Gui.VELIKOST_POLJA, drugi[0]*Gui.VELIKOST_POLJA + Gui.VELIKOST_POLJA, drugi[1]*Gui.VELIKOST_POLJA + Gui.VELIKOST_POLJA, outline = self.barva3, fill=self.barva3, tag=Gui.TAG_ZMAGA)
-        self.plosca.create_rectangle(tretji[0]*Gui.VELIKOST_POLJA, tretji[1]*Gui.VELIKOST_POLJA, tretji[0]*Gui.VELIKOST_POLJA + Gui.VELIKOST_POLJA, tretji[1]*Gui.VELIKOST_POLJA + Gui.VELIKOST_POLJA, outline = self.barva3, fill=self.barva3, tag=Gui.TAG_ZMAGA)
-        self.plosca.create_rectangle(cetrti[0]*Gui.VELIKOST_POLJA, cetrti[1]*Gui.VELIKOST_POLJA, cetrti[0]*Gui.VELIKOST_POLJA + Gui.VELIKOST_POLJA, cetrti[1]*Gui.VELIKOST_POLJA + Gui.VELIKOST_POLJA, outline = self.barva3, fill=self.barva3, tag=Gui.TAG_ZMAGA)
+        self.plosca.create_rectangle(prvi[0]*Gui.VELIKOST_POLJA, prvi[1]*Gui.VELIKOST_POLJA, prvi[0]*Gui.VELIKOST_POLJA + Gui.VELIKOST_POLJA, prvi[1]*Gui.VELIKOST_POLJA + Gui.VELIKOST_POLJA, outline = self.barva_zmaga, fill=self.barva_zmaga, tag=Gui.TAG_ZMAGA)
+        self.plosca.create_rectangle(drugi[0]*Gui.VELIKOST_POLJA, drugi[1]*Gui.VELIKOST_POLJA, drugi[0]*Gui.VELIKOST_POLJA + Gui.VELIKOST_POLJA, drugi[1]*Gui.VELIKOST_POLJA + Gui.VELIKOST_POLJA, outline = self.barva_zmaga, fill=self.barva_zmaga, tag=Gui.TAG_ZMAGA)
+        self.plosca.create_rectangle(tretji[0]*Gui.VELIKOST_POLJA, tretji[1]*Gui.VELIKOST_POLJA, tretji[0]*Gui.VELIKOST_POLJA + Gui.VELIKOST_POLJA, tretji[1]*Gui.VELIKOST_POLJA + Gui.VELIKOST_POLJA, outline = self.barva_zmaga, fill=self.barva_zmaga, tag=Gui.TAG_ZMAGA)
+        self.plosca.create_rectangle(cetrti[0]*Gui.VELIKOST_POLJA, cetrti[1]*Gui.VELIKOST_POLJA, cetrti[0]*Gui.VELIKOST_POLJA + Gui.VELIKOST_POLJA, cetrti[1]*Gui.VELIKOST_POLJA + Gui.VELIKOST_POLJA, outline = self.barva_zmaga, fill=self.barva_zmaga, tag=Gui.TAG_ZMAGA)
         self.plosca.tag_lower(Gui.TAG_ZMAGA)
 
-    def gumbi_klik(self, event):
+    def mozne_figure_klik(self, event):
         """Obdelaj klik na figure."""
         i = event.x // Gui.VELIKOST_POLJA
         j = event.y // Gui.VELIKOST_POLJA
@@ -364,7 +352,7 @@ class Gui():
             # Poteza je bila veljavna, narišemo jo na zaslon
             # Ugotovimo, kako nadaljevati
             (zmagovalec, cetverka, figura) = r
-            self.narisi(figura, p, self.plosca)
+            self.narisi_figuro(figura, p, self.plosca)
             self.figura.delete(Gui.TAG_FIGURA)
             if igralec == PRVI_IGRALEC:
                     self.napis.set("Na potezi je " + PRVI_IGRALEC + ", da izbere figuro.")
@@ -385,8 +373,8 @@ class Gui():
             pass
         else:
             self.figura.delete(Gui.TAG_FIGURA)
-            self.gumbi.delete(tag_lastnosti_figure)
-            self.narisi(lastnosti_figure, (0,0), self.figura)
+            self.mozne_figure.delete(tag_lastnosti_figure)
+            self.narisi_figuro(lastnosti_figure, (0,0), self.figura)
             if self.igra.na_potezi == PRVI_IGRALEC:
                     self.napis.set("Na potezi je " + PRVI_IGRALEC + ", da položi izbrano figuro na igralno ploščo.")
                     self.igralec_1.igraj()
@@ -394,17 +382,17 @@ class Gui():
                     self.napis.set("Na potezi je " + DRUGI_IGRALEC + ", da položi izbrano figuro na igralno ploščo.")
                     self.igralec_2.igraj()
 
-    def narisi(self, lastnosti, p, lokacija):
+    def narisi_figuro(self, lastnosti, p, lokacija):
         """Nariši figuro, gumb ali izbrano figuro (podana lokacija) s podanimi lastnostmi."""
         (luknja, proto_barva, diagonala, kvadrat) = lastnosti
-        if lokacija == self.gumbi:
+        if lokacija == self.mozne_figure:
             oznaka = naredi_tag(lastnosti)
         else: #self.figura in self.plosca
             oznaka = Gui.TAG_FIGURA
         if proto_barva:
-            barva = self.barva1
+            barva = self.barva_zelene
         else:
-            barva = self.barva2
+            barva = self.barva_rumene
         x = p[0] * Gui.VELIKOST_POLJA
         y = p[1] * Gui.VELIKOST_POLJA
         sirina = 3
@@ -439,10 +427,11 @@ if __name__ == "__main__":
     # Opišemo argumente, ki jih sprejmemo iz ukazne vrstice
     parser = argparse.ArgumentParser(description="Igra Quarto")
     # Argument --debug, ki vklopi sporočila o tem, kaj se dogaja
-    parser.add_argument('--globina',
-                        default=MINIMAX_GLOBINA,
+    parser.add_argument('--tezavnost',
+                        default=TEZAVNOST,
                         type=int,
-                        help='globina iskanja za minimax algoritem')
+                        help='globina iskanja minimax algoritma z implementiranimi alfa beta rezi se dinamično spremeni tako,'
+                             'da bo porabila vsaj toliko stotink sekunde')
 
     parser.add_argument('--debug',
                         action='store_true',
@@ -462,7 +451,7 @@ if __name__ == "__main__":
     # Naredimo objekt razreda Gui in ga spravimo v spremenljivko,
     # sicer bo Python mislil, da je objekt neuporabljen in ga bo pobrisal
     # iz pomnilnika.
-    aplikacija = Gui(root, args.globina)
+    aplikacija = Gui(root, args.tezavnost)
     root.minsize(900,450) #minimalna velikost okna
 
     # Kontrolo prepustimo glavnemu oknu. Funkcija mainloop neha

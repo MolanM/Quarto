@@ -8,6 +8,7 @@ DRUGI_IGRALEC = "drugi"
 PRAZNO = "."
 NEODLOCENO = "neodločeno"
 NI_KONEC = "ni konec"
+KONEC = "je konec"
 
 def nasprotnik(igralec):
     """Vrni nasprotnika od igralca."""
@@ -31,7 +32,7 @@ class Igra():
         self.izbrana_figura = None
         self.mozne_figure = []
         self.generiraj_figure()
-        self.zmagovalec = NI_KONEC
+        self.trajanje = NI_KONEC
 
     def generiraj_figure(self):
         '''generira vse mozne figure'''
@@ -45,7 +46,7 @@ class Igra():
            z metodo razveljavi."""
         p = [self.plosca[i][:] for i in range(4)]
         seznam_moznih_figur = self.mozne_figure[:]
-        self.zgodovina.append((p, self.na_potezi, self.izbrana_figura, seznam_moznih_figur, self.zmagovalec))
+        self.zgodovina.append((p, self.na_potezi, self.izbrana_figura, seznam_moznih_figur, self.trajanje))
 
     def kopija(self):
         """Vrni kopijo te igre, brez zgodovine."""
@@ -59,13 +60,12 @@ class Igra():
         k.na_potezi = self.na_potezi
         k.izbrana_figura = self.izbrana_figura
         k.mozne_figure = self.mozne_figure[:]
-        k.zmagovalec = self.zmagovalec
+        k.trajanje = self.trajanje
         return k
 
     def razveljavi(self):
         """Razveljavi potezo in se vrni v prejšnje stanje."""
-        (self.plosca, self.na_potezi, self.izbrana_figura, seznam_mozne_figure, self.zmagovalec) = self.zgodovina.pop()
-        self.mozne_figure = seznam_mozne_figure[:]
+        (self.plosca, self.na_potezi, self.izbrana_figura, self.mozne_figure, self.trajanje) = self.zgodovina.pop()
 
     def veljavne_poteze(self):
         """Vrni seznam veljavnih potez."""
@@ -79,7 +79,7 @@ class Igra():
     def izberi_figuro(self, lastnosti):
         '''ce je mozno funkcija izbere figuro'''
         figura = self.izbrana_figura
-        if (self.zmagovalec != NI_KONEC) or (figura != None) or (lastnosti not in self.mozne_figure) or (self.na_potezi == None):
+        if (self.trajanje == KONEC) or (figura != None) or (lastnosti not in self.mozne_figure):
             return None
         else:
             self.izbrana_figura = lastnosti
@@ -93,7 +93,7 @@ class Igra():
         (i,j) = p
         i = int(i)
         j = int(j)
-        if (self.zmagovalec != NI_KONEC) or (self.plosca[i][j] != PRAZNO) or (self.na_potezi == None) or (self.izbrana_figura == None):
+        if (self.trajanje == KONEC) or (self.plosca[i][j] != PRAZNO) or (self.izbrana_figura == None):
             # neveljavna poteza
             return None
         else:
@@ -106,8 +106,8 @@ class Igra():
                 # Igre ni konec, zdaj je na potezi nasprotnik
                 pass
             else:
+                pass
                 # Igre je konec
-                self.na_potezi = None
             return (zmagovalec, cetvorka, figura)
 
     # Tabela vseh cetvork, ki nastopajo v igralnem polju
@@ -137,9 +137,8 @@ class Igra():
                 if p != PRAZNO and self.plosca[i2][j2] != PRAZNO and self.plosca[i3][j3] != PRAZNO and self.plosca[i4][j4] != PRAZNO and \
                 p[l] == self.plosca[i2][j2][l] == self.plosca[i3][j3][l] == self.plosca[i4][j4][l]:
                     # Našli smo zmagovalno cetvorko
-                    if self.na_potezi != None:
-                        self.zmagovalec = self.na_potezi
-                    return (self.zmagovalec, [t[0], t[1], t[2], t[3]])
+                    self.trajanje = KONEC
+                    return (self.na_potezi, [t[0], t[1], t[2], t[3]])
         # Ni zmagovalca, ali je igre konec?
         for i in range(4):
             for j in range(4):
