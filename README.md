@@ -5,20 +5,27 @@ Za projektno nalogo pri Programiranju 2 bova izdelala igro Quarto v programskem 
 ## Struktura programa:
 
 Igra je ločena v šest datotek:
- * 1 quarto.py
-	* Grafični vmesnik (glavni program)
- * 2 igra.py
-	* V tem modulu je shranjena logika igre. Igralna plošča je predstavljena z matriko, posamezne figure pa so predstavljene kot nabor bolleanov dolžine štiri (vsaka figura v igri quarto je namreč določena s štirimi lastnostmi). Zgodovina potez je seznam naborov, kjer posamezen nabor (se pravi trenutno ''stanje igre'') vsebuje stanje plošče (matrike ki predstavlja ploščo), igralca, ki je na potezi, izbrano figuro, seznam možnih figur (figur, ki še niso bile odigrane) in zmagovalca (eden od igralcev ali neodločeno).
-Zmagovalne četvorke so v igri predstavljene kot matrike, ki vsebujejo položaje na katerih se preverja skupna lastnost figur. Stanje igre je lahko neodločeno (torej igra še poteka) ali pa je zmagovalec eden od igralcev (prvi ali drugi igralec) – v tem primeru igra vrne tudi zmagovalno četvorko. 
+ * quarto.py
+ 
+   Grafični vmesnik (glavni program)
+ * igra.py
+ 
+    V tem modulu je shranjena logika igre. Igralna plošča je predstavljena z matriko, posamezne figure pa so predstavljene kot nabor bolleanov dolžine štiri (vsaka figura v igri quarto je namreč določena s štirimi lastnostmi). Zgodovina potez je seznam naborov, kjer posamezen nabor (se pravi trenutno ''stanje igre'') vsebuje stanje plošče (matrike ki predstavlja ploščo), igralca, ki je na potezi, izbrano figuro, seznam možnih figur (figur, ki še niso bile odigrane) in trajanja (ali igra še traja ali ne).
+    
+   Zmagovalne četvorke so v igri predstavljene kot matrike, ki vsebujejo položaje na katerih se preverja skupna lastnost figur. Stanje igre je lahko neodločeno ali pa je zmagovalec eden od igralcev (prvi ali drugi igralec) – v tem primeru igra vrne tudi zmagovalno četvorko, da jo lahko grafični vmesnik pobarva. 
 
- * 3 clovek.py
-	* Cloveški igralec
- * 4 racunalnik.py
-	* Racunalnik
- * 5 pomozne.py
-	* Zbrane pomožne funkcije ki so uporabljene v drugih modulih
- * 6 minimax.py
-	* V tem modulu je implementiran minimx algoritem (z alfa beta rezi) in hevristična funkcija.
+ * clovek.py
+ 
+   Cloveški igralec
+ * racunalnik.py
+ 
+   Racunalnik
+ * pomozne.py
+ 
+   Zbrane pomožne funkcije ki so uporabljene v drugih modulih
+ * minimax.py
+ 
+   V tem modulu je implementiran minimx algoritem (z alfa beta rezi) in hevristična funkcija.
 
 ## Pravila igre:
 [Hiter opis igre v angleščini](https://en.wikipedia.org/wiki/Quarto_(board_game))
